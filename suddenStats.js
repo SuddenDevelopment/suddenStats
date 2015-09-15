@@ -26,11 +26,12 @@ objConfig={
 var _ = require('lodash');
 var suddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
-	this.config = {limit:10000,stats:{primary:{type:'numeric'}}}
+	this.config = {limit:10000,throttle:100,stats:{primary:{type:'numeric'}}}
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
 	this.simple = false;
 	this.stats = {};
-
+	this.batch = [];
+	this.intBatch = 0;
 	this.init(objConfig);
 
 	this.init = function(objConfig){
@@ -49,8 +50,27 @@ var suddenStats = function(objConfig){
 		if(_.keys(this.stats)==1 && this.stats.hasOwnProperty('primary')){ this.simple = true; }
 	}
 
+	this.qData = function(varData){
+		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
+		//config.limit is to start kciking things out of the batch after too many per batch / time period
+		if(this.intBatch<this.config.limit){
+			this.batch.push(varData);
+			/* 
+			if(fnInprocess){ 
+				if(this.config.limit > 2){this.config.limit--;} 
+				this.config.throttle++;
+			}
+			*/
+			var fnInprocess = _.throttle(this.addData(this.batch),this.config.throttle);
+		}
+	}
+
 	this.addData = function(arrData){
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
+		
+		//clear the batch
+		this.batch=[]; this.intBatch=0;
+
 		if(this.simple){ this.updateStat(arrData,'primary'); }
 		else{ this.addCustomData(arrData);
 			var arrBatch={};
