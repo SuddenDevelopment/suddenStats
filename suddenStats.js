@@ -71,20 +71,21 @@ var suddenStats = function(objConfig){
 				this.updateStat(objStat.data,arrBatch[strStat]);
 			});
 		}
+		return this.stats;
 	};
 
 	this.updateStat = function(arrData,key){
 		//these are light, but do them as little as necessary
 		var intMin = _.min(arrData);
 		var intMax = _.max(arrData);
-		if( intMin < this.stats.[key].min ){ this.stats.[key].min = intMin; }
-		if( intMax > this.stat.[key] ){ this.stats.[key].max = intMax; }
-		this.stats.[key].count = this.stats.[key].count + arrData.length;
-		this.stats.[key].total = this.stats.[key].total + _.sum(arrData);
-		this.stats.[key].last = _.last(arrData);
-		if( this.stats.[key].first===false ){ this.stats.[key].first = _.first(arrData); this.stats.[key].fs:Date.now(); }
-		this.stats.[key].ls=Date.now();
-		this.stats.[key].avg=this.stats.[key].total/this.stats.[key].count;
+		if( intMin < this.stats[key].min ){ this.stats[key].min = intMin; }
+		if( intMax > this.stats[key] ){ this.stats[key].max = intMax; }
+		this.stats[key].count = this.stats[key].count + arrData.length;
+		this.stats[key].total = this.stats[key].total + _.sum(arrData);
+		this.stats[key].last = _.last(arrData);
+		if( this.stats[key].first===false ){ this.stats[key].first = _.first(arrData); this.stats[key].fs:Date.now(); }
+		this.stats[key].ls=Date.now();
+		this.stats[key].avg=this.stats[key].total/this.stats[key].count;
 	}
 
 };
