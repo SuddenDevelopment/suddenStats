@@ -41,7 +41,7 @@ var suddenStats = function(objConfig){
 		//create all of the stats properties for what will be tracked
 		_.forOwn(this.config.stats,function(objV,k){
 			//set defaults for stat
-			this.stats[k] = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,fs:Date.now(),ls:Date.now(),type:'numeric'};
+			this.stats[k] = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
 			//add any user overrides to things like type
 			_.merge(this.stats[k],objV);
 		});
@@ -78,14 +78,19 @@ var suddenStats = function(objConfig){
 		//these are light, but do them as little as necessary
 		var intMin = _.min(arrData);
 		var intMax = _.max(arrData);
+		var intSum = _.sum(arrData);
+		var intCount = arrData.length;
+		var intAvg = intSum/intCount;
 		if( intMin < this.stats[key].min ){ this.stats[key].min = intMin; }
 		if( intMax > this.stats[key] ){ this.stats[key].max = intMax; }
-		this.stats[key].count = this.stats[key].count + arrData.length;
-		this.stats[key].total = this.stats[key].total + _.sum(arrData);
+		this.stats[key].count = this.stats[key].count + intCount;
+		this.stats[key].total = this.stats[key].total + intSum;
 		this.stats[key].last = _.last(arrData);
 		if( this.stats[key].first===false ){ this.stats[key].first = _.first(arrData); this.stats[key].fs:Date.now(); }
 		this.stats[key].ls=Date.now();
 		this.stats[key].avg=this.stats[key].total/this.stats[key].count;
+		this.stats[key].diff = intAvg-this.stats[key].lastAvg;
+		this.stats[key].lastAvg = intAvg;
 	}
 
 };
