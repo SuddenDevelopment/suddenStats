@@ -1,0 +1,15 @@
+{
+  "name": "suddenStats",
+  "description": "Simple fast statistcs that stay updated on the fly.",
+  "version": "1.0.0",
+  "contributors": [
+    {
+      "name": "Anthony Aragues",
+      "email": "anthony.aragues@gmail.com"
+    }
+  ],
+  "dependencies": {
+    "lodash": "^3.10.1"
+  },
+  "readmeFilename": "README.md"
+}
