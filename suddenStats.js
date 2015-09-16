@@ -114,3 +114,4 @@ var suddenStats = function(objConfig){
 	}
 
 };
+module.exports = suddenStats;

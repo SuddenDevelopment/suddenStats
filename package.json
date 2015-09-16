@@ -1,15 +1,33 @@
 {
-  "name": "suddenStats",
+  "name": "suudenstats",
   "description": "Simple fast statistcs that stay updated on the fly.",
+  "homepage":"http://suddendevelopment.com",
   "version": "1.0.0",
   "contributors": [
-    {
-      "name": "Anthony Aragues",
-      "email": "anthony.aragues@gmail.com"
-    }
+    "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
   "dependencies": {
     "lodash": "^3.10.1"
   },
+  "main": "suddenStats.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SuddenDevelopment/suddenStats.git"
+  },
+  "keywords": [
+    "Statistics",
+    "streaming",
+    "data"
+  ],
+  "author": "Anthony Aragues <anthony.aragues@gmail.com> (http://suddendevelopment.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SuddenDevelopment/suddenStats/issues"
+  },
+  "homepage": "https://github.com/SuddenDevelopment/suddenStats",
   "readmeFilename": "README.md"
 }
