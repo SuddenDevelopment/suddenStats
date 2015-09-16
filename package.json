@@ -1,5 +1,5 @@
 {
-  "name": "suudenstats",
+  "name": "suddenstats",
   "description": "Simple fast statistcs that stay updated on the fly.",
   "homepage":"http://suddendevelopment.com",
   "version": "1.0.0",
@@ -10,9 +10,14 @@
     "lodash": "^3.10.1"
   },
   "main": "suddenStats.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^4.4.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node suddenStats.js",
+    "test": "npm run test-node",
+    "test-node": "./node_modules/mocha/bin/mocha -R spec ./tests"
   },
   "repository": {
     "type": "git",
