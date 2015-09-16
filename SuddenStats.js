@@ -24,7 +24,7 @@ objConfig={
 }
 */
 var _ = require('lodash');
-var suddenStats = function(objConfig){
+var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
 	this.config = {limit:10000,throttle:100,stats:{primary:{type:'numeric'}}}
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
@@ -32,7 +32,7 @@ var suddenStats = function(objConfig){
 	this.stats = {};
 	this.batch = [];
 	this.intBatch = 0;
-	this.init(objConfig);
+	// this.init(objConfig);
 
 	this.init = function(objConfig){
 		//TODO: validate the structure of config passed in
@@ -83,7 +83,7 @@ var suddenStats = function(objConfig){
 				//stats loop
 				_.forOwn(this.config.stats,function(objStat,strStat){
 					//get the numbers from the object based on the path
-					arrBatch[strStat].data.push( _.get(objData,objStat.path); );
+					arrBatch[strStat].data.push( _.get(objData,objStat.path) );
 				});
 			});
 			_.forOwn(arrBatch,function(objStat,strStat){
@@ -106,7 +106,7 @@ var suddenStats = function(objConfig){
 		this.stats[key].count = this.stats[key].count + intCount;
 		this.stats[key].total = this.stats[key].total + intSum;
 		this.stats[key].last = _.last(arrData);
-		if( this.stats[key].first===false ){ this.stats[key].first = _.first(arrData); this.stats[key].fs:Date.now(); }
+		if( this.stats[key].first===false ){ this.stats[key].first = _.first(arrData); this.stats[key].fs=Date.now(); }
 		this.stats[key].ls=Date.now();
 		this.stats[key].avg=this.stats[key].total/this.stats[key].count;
 		this.stats[key].diff = intAvg-this.stats[key].lastAvg;
@@ -114,4 +114,4 @@ var suddenStats = function(objConfig){
 	}
 
 };
-module.exports = suddenStats;
+module.exports = SuddenStats;
