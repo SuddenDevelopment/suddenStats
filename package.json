@@ -17,7 +17,7 @@
   "scripts": {
     "start": "node suddenStats.js",
     "test": "npm run test-node",
-    "test-node": "./node_modules/mocha/bin/mocha -R spec ./tests"
+    "test-node": "mocha -R spec ./tests"
   },
   "repository": {
     "type": "git",
