@@ -93,7 +93,7 @@ var SuddenStats = function(objConfig){
 				self.updateStat(objStat.data,arrBatch[strStat]);
 			});
 		}
-		console.log(self.stats);
+		//console.log(self.stats);
 	};
 
 	this.updateStat = function(arrData,key){

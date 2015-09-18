@@ -2,24 +2,25 @@ var assert        = require("assert");
 var should        = require("should");
 var SuddenStats   = require("../SuddenStats");
 
-describe('basic SuddenStats instance', function () {
- it('should return an object', function (done) {
+describe('get a basic stat', function () {
+ it('should return max=6', function (done) {
+    //test
     var objStats = new SuddenStats();
-   (typeof objStats).should.equal('object');
+    objStats.addData([1,2,3,4,5,6]); 
+    //check
+   (objStats.stats.primary.max).should.be.exactly(6);
    done();
  });
 });
 
-describe('basic SuddenStats instance 2', function () {
- it('should return max=6', function (done) {
+describe('get a diff between stat batches', function () {
+ it('should return diff=13.5', function (done) {
     //test
-
-
     var objStats = new SuddenStats();
-    objStats.addData([1,2,3,4,5,6]);
-    
+    objStats.addData([1,2,3,4,5,6]); 
+    objStats.addData([15,16,17,18,19,]);
     //check
-   (objStats.stats.primary.max).should.be.exactly(6);
+   (objStats.stats.primary.diff).should.be.exactly(13.5);
    done();
  });
 });
