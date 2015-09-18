@@ -114,7 +114,7 @@ var SuddenStats = function(objConfig){
 		self.stats[key].avg=self.stats[key].total/self.stats[key].count;
 		self.stats[key].diff = intAvg-self.stats[key].lastAvg;
 		self.stats[key].lastAvg = intAvg;
-			}
+	}
 
 };
 module.exports = SuddenStats;

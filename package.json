@@ -1,6 +1,6 @@
 {
   "name": "suddenstats",
-  "description": "Simple fast statistcs that stay updated on the fly.",
+  "description": "Simple fast statistcs that stay updated on the fly. intended for high volume streaming data",
   "homepage":"http://suddendevelopment.com",
   "version": "1.0.0",
   "contributors": [
