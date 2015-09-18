@@ -68,6 +68,7 @@ var SuddenStats = function(objConfig){
 	}
 
 	this.addData = function(arrData){
+		//EXAMPLE: objStat.addData([1,2,3,4]);
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
 		
 		//clear the batch
@@ -97,6 +98,7 @@ var SuddenStats = function(objConfig){
 	};
 
 	this.updateStat = function(arrData,key){
+		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//these are light, but do them as little as necessary
 		//console.log(this.stats);
 		var intMin = _.min(arrData);
