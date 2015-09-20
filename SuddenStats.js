@@ -99,24 +99,31 @@ var SuddenStats = function(objConfig){
 
 	this.updateStat = function(arrData,key){
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
-		//these are light, but do them as little as necessary
 		//console.log(this.stats);
-		var intMin = _.min(arrData);
-		var intMax = _.max(arrData);
-		var intSum = _.sum(arrData);
-		var intCount = arrData.length;
+		var intCount = 0;		
+		//remember pop is backwards but fast https://jsperf.com/fastest-array-loops-in-javascript/401
+		//only run through the array once :)
+		while(v=arrData.pop()){
+			if(intCount===0){ var intMin = intMax = intSum = intAvg = intFirst = intLast = v; }
+			else{
+				if(v<intMin){ intMin=v; }
+				if(v>intMax){ intMax=v; }
+				intSum = intSum+v;
+				intFirst = v;
+			}
+			intCount++;
+		}
 		var intAvg = intSum/intCount;
 		if( intMin < self.stats[key].min || self.stats[key].first===false ){ self.stats[key].min = intMin; }
 		if( intMax > self.stats[key].max ){ self.stats[key].max = intMax; }
 		self.stats[key].count = self.stats[key].count + intCount;
 		self.stats[key].total = self.stats[key].total + intSum;
-		self.stats[key].last = _.last(arrData);
-		if( self.stats[key].first===false ){ self.stats[key].first = _.first(arrData); self.stats[key].fs=Date.now(); }
+		self.stats[key].last = intLast;
+		if( self.stats[key].first===false ){ self.stats[key].first = intFirst; self.stats[key].fs=Date.now(); }
 		self.stats[key].ls=Date.now();
 		self.stats[key].avg=self.stats[key].total/self.stats[key].count;
 		self.stats[key].diff = intAvg-self.stats[key].lastAvg;
 		self.stats[key].lastAvg = intAvg;
-	}
-
+	};
 };
 module.exports = SuddenStats;
