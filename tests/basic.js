@@ -27,6 +27,21 @@ describe('get a diff between stat batches', function () {
  });
 });
 
+describe('addData', function () {
+  it('should take both array and non-array data', function () {
+    var objStats = new SuddenStats();
+    objStats.addData(1);
+    objStats.addData(2);
+    objStats.addData(3);
+    objStats.addData(4);
+    objStats.addData(5);
+    objStats.addData(6);
+    objStats.addData([15,16,17,18,19]);
+    //check
+   (objStats.stats.primary.max).should.be.exactly(19);
+  });
+});
+
 /* 0.064 using lodash */
 /* 0.027 using array.pop */
 describe('performance test', function () {
@@ -51,7 +66,7 @@ describe('batch test', function () {
     var intStart= Date.now();
     for(var i=0;i<1000;i++){ objStats.qData(i); }
     var intEnd= Date.now();
-	var intDuration= (intEnd-intStart)/1000;
+    var intDuration= (intEnd-intStart)/1000;
     //check
      console.log(objStats.stats);
      console.log(objStats.batch);
