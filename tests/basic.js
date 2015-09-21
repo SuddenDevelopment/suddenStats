@@ -43,3 +43,19 @@ describe('performance test', function () {
    done();
  });
 });
+
+describe('batch test', function () {
+ it('target is 50k/second', function (done) {
+    //test
+    var objStats = new SuddenStats();
+    var intStart= Date.now();
+    for(var i=0;i<1000;i++){ objStats.qData(i); }
+    var intEnd= Date.now();
+	var intDuration= (intEnd-intStart)/1000;
+    //check
+     console.log(objStats.stats);
+     console.log(objStats.batch);
+   (objStats.stats.primary.count).should.be.exactly(1000);
+   done();
+ });
+});

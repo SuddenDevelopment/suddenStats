@@ -26,12 +26,13 @@ objConfig={
 var _ = require('lodash');
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
-	this.config = {limit:10000,throttle:100,stats:{primary:{type:'numeric'}}};
+	this.config = {limit:500,throttle:1000,stats:{primary:{type:'numeric'}}};
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
 	this.simple = false;
 	this.stats = {};
 	this.batch = [];
 	this.intBatch = 0;
+	this.processing = false;
 	var self=this;
 
 	this.init = function(objConfig){
@@ -53,27 +54,37 @@ var SuddenStats = function(objConfig){
 	this.init(objConfig);
 
 	this.qData = function(varData){
+		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
 		//config.limit is to start kciking things out of the batch after too many per batch / time period
 		if(self.intBatch<this.config.limit){
-			self.batch.push(varData);
+			if(Array.isArray(varData)){  
+				//combine batches or arrays into the throttle timeline
+				var v;
+				while(v=varData.pop()){ self.batch.push(v); }
+			}else{
+				//for individual entries
+				self.batch.push(varData);
+				self.intBatch=self.intBatch+self.batch.length;
+			}
 			/* 
 			if(fnInprocess){ 
 				if(self.config.limit > 2){self.config.limit--;} 
 				self.config.throttle++;
 			}
 			*/
-			var fnInprocess = _.throttle(self.addData(self.batch),self.config.throttle);
+		}else{ 
+			this.addData(self.batch); 
 		}
-	}
+		//this.runQ(self.batch);
+	};
 
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
-		
+		//if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
-
 		if(self.simple){ self.updateStat(arrData,'primary'); }
 		else{
 			var arrBatch={};
@@ -94,8 +105,10 @@ var SuddenStats = function(objConfig){
 				self.updateStat(objStat.data,arrBatch[strStat]);
 			});
 		}
-		//console.log(self.stats);
+		//console.log(arrData);
 	};
+
+	this.runQ = _.throttle(this.addData,self.config.throttle);
 
 	this.updateStat = function(arrData,key){
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
