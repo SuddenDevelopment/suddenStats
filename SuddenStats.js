@@ -110,7 +110,10 @@ var SuddenStats = function(objConfig){
 
 	this.runQ = _.throttle(this.addData,self.config.throttle);
 
-	this.updateStat = function(arrData,key){
+	this.updateStat = function(arrData, key){
+		if (!(arrData instanceof Array)) {
+			arrData = [arrData];
+		}
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
 		var intCount = 0;		
