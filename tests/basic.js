@@ -75,3 +75,43 @@ describe('batch test', function () {
    done();
  });
 });
+
+describe('count all exact occurences of a valu egiven a json path', function () {
+ it('should return max=6', function (done) {
+    //test
+    var objStats = new SuddenStats({stats:
+       source:{path:"source",type:"count"}
+      ,user:{path:"user",type:"count"}
+      ,score:{path:"score",type:"numeric"}
+      });
+    objStats.addData(
+      [
+         {"source":"wikipedia","user":"anthony","score":11}
+        ,{"source":"wikipedia","user":"randall","score":19}
+        ,{"source":"twitter","user":"anthony","score":8}
+        ,{"source":"wikipedia","user":"wes","score":33}
+        ,{"source":"wikipedia","user":"anthony","score":78}
+        ,{"source":"wikipedia","user":"wes","score":43}
+        ,{"source":"twitter","user":"wes","score":56}
+        ,{"source":"wikipedia","user":"randall","score":24}
+      ]
+    ); 
+    //check
+    /*
+    stats:{
+      source:{
+        wikipedia:6
+        ,twitter:2
+      }
+      ,user:{
+        anthony:
+        ,randall:
+        ,wes:
+      }
+    }
+    */
+    //console.log(objStats);
+   (objStats.stats.source.wikipedia.count).should.be.exactly(6);
+   done();
+ });
+});

@@ -67,7 +67,6 @@ var SuddenStats = function(objConfig){
 				//for individual entries
 				self.intBatch=self.intBatch+1;
 				self.batch.push(varData);
-				
 			}
 			/* 
 			if(fnInprocess){ 
