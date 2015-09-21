@@ -8,7 +8,7 @@ describe('get a basic stat', function () {
     var objStats = new SuddenStats();
     objStats.addData([1,2,3,4,5,6]); 
     //check
-    console.log(objStats);
+    //console.log(objStats);
    (objStats.stats.primary.max).should.be.exactly(6);
    done();
  });
@@ -21,7 +21,7 @@ describe('get a diff between stat batches', function () {
     objStats.addData([1,2,3,4,5,6]); 
     objStats.addData([15,16,17,18,19,]);
     //check
-    console.log(objStats);
+    //console.log(objStats);
    (objStats.stats.primary.diff).should.be.exactly(13.5);
    done();
  });
@@ -38,7 +38,7 @@ describe('performance test', function () {
     var intEnd= Date.now();
 	var intDuration= (intEnd-intStart)/1000;
     //check
-     console.log(intDuration);
+     //console.log(intDuration);
    (intDuration).should.be.below(2);
    done();
  });

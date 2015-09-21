@@ -1,4 +1,4 @@
-
+'use strict';
 // stats->stat->
 // add stat, wipe stats, update stat
 // min, max, avg, last, first, count, total
@@ -103,8 +103,16 @@ var SuddenStats = function(objConfig){
 		var intCount = 0;		
 		//remember pop is backwards but fast https://jsperf.com/fastest-array-loops-in-javascript/401
 		//only run through the array once :)
+		var v;
 		while(v=arrData.pop()){
-			if(intCount===0){ var intMin = intMax = intSum = intAvg = intFirst = intLast = v; }
+			if(intCount===0){ 
+				var intMin = v; 
+				var intMax = v;
+				var intSum = v;
+				var intAvg = v;
+				var intFirst = v;
+				var intLast = v; 
+			}
 			else{
 				if(v<intMin){ intMin=v; }
 				if(v>intMax){ intMax=v; }
