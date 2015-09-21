@@ -45,17 +45,18 @@ describe('performance test', function () {
 });
 
 describe('batch test', function () {
- it('target is 50k/second', function (done) {
+ it('expecting batch limit to get processed and the leftover to be in an unprocessed batch', function (done) {
     //test
     var objStats = new SuddenStats();
     var intStart= Date.now();
-    for(var i=0;i<1000;i++){ objStats.qData(i); }
+    for(var i=1;i<=1001;i++){ objStats.qData(i); }
     var intEnd= Date.now();
 	var intDuration= (intEnd-intStart)/1000;
     //check
-     console.log(objStats.stats);
-     console.log(objStats.batch);
+     //console.log(objStats.stats);
+     //console.log(objStats.intBatch);
    (objStats.stats.primary.count).should.be.exactly(1000);
+   (objStats.intBatch).should.be.exactly(1);
    done();
  });
 });

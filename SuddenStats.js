@@ -26,7 +26,7 @@ objConfig={
 var _ = require('lodash');
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
-	this.config = {limit:500,throttle:1000,stats:{primary:{type:'numeric'}}};
+	this.config = {limit:1000,throttle:1000,stats:{primary:{type:'numeric'}}};
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
 	this.simple = false;
 	this.stats = {};
@@ -39,9 +39,9 @@ var SuddenStats = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//TODO: consider using _.defaultsDeep instead
 		//merge defaults and config provided.
-		this.config = _.merge(this.config,objConfig);
+		self.config = _.merge(self.config,objConfig);
 		//create all of the stats properties for what will be tracked
-		_.forOwn(this.config.stats,function(objV,k){
+		_.forOwn(self.config.stats,function(objV,k){
 			//set defaults for stat
 			self.stats[k] = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
 			//add any user overrides to things like type
@@ -57,15 +57,17 @@ var SuddenStats = function(objConfig){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
 		//config.limit is to start kciking things out of the batch after too many per batch / time period
-		if(self.intBatch<this.config.limit){
+		
 			if(Array.isArray(varData)){  
 				//combine batches or arrays into the throttle timeline
 				var v;
+				self.intBatch=self.intBatch = self.intBatch+varData.length;
 				while(v=varData.pop()){ self.batch.push(v); }
 			}else{
 				//for individual entries
+				self.intBatch=self.intBatch+1;
 				self.batch.push(varData);
-				self.intBatch=self.intBatch+self.batch.length;
+				
 			}
 			/* 
 			if(fnInprocess){ 
@@ -73,16 +75,14 @@ var SuddenStats = function(objConfig){
 				self.config.throttle++;
 			}
 			*/
-		}else{ 
-			this.addData(self.batch); 
-		}
+		if(self.intBatch>=self.config.limit){ this.addData(self.batch); }
 		//this.runQ(self.batch);
 	};
 
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
-		//if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
+		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
 		if(self.simple){ self.updateStat(arrData,'primary'); }
