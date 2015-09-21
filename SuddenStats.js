@@ -1,11 +1,7 @@
 'use strict';
-// stats->stat->
 // add stat, wipe stats, update stat
-// min, max, avg, last, first, count, total
-// start stop
 // stats windows
 // limits on windows, limits on stats 
-// key, value unique, values
 
 //Why? because stats like .min and .max need to be run over an entire array each time, these stay up to date. normally it's cheap to just dump into an array and run min and max etc when you need them, but in some cases min and max are neded to determine what to do often.
 
@@ -22,6 +18,13 @@ objConfig={
 			 }
 		}
 }
+
+stat types:
+  numeric=min,max,avg, etc.
+  uniq=value,count
+  compete=uniq+numeric
+  co-occurence=2 coinciding values count, uniq intersection count
+
 */
 var _ = require('lodash');
 var SuddenStats = function(objConfig){
@@ -33,8 +36,17 @@ var SuddenStats = function(objConfig){
 	this.batch = [];
 	this.intBatch = 0;
 	this.processing = false;
+	this.objNumericDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
+	this.objUniqDefaults = {count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	this.objCompeteDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
 	var self=this;
-
+/*
+ source:{type:"uniq",path:"source"}
+      ,user:{type:"compete",path:"user",score:"score"}
+      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
+      ,score:{type:"numeric",path:"score"}
+    });
+    */
 	this.init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//TODO: consider using _.defaultsDeep instead
@@ -43,9 +55,21 @@ var SuddenStats = function(objConfig){
 		//create all of the stats properties for what will be tracked
 		_.forOwn(self.config.stats,function(objV,k){
 			//set defaults for stat
-			self.stats[k] = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
 			//add any user overrides to things like type
-			_.merge(self.stats[k],objV);
+			switch(objV.type){
+				case 'numeric':
+					self.stats[k] = _.merge(self.objNumericDefaults,objV);
+					break;
+				case 'uniq':
+					self.stats[k] = _.merge(self.objUniqDefaults,objV);
+					break;
+				case 'compete':
+					self.stats[k] = _.merge(self.objCompeteDefaults,objV);
+					break;
+				case 'co-occurence':
+					self.stats[k] = _.merge(self.objUniqDefaults,objV);
+					break;
+			}
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
@@ -77,7 +101,13 @@ var SuddenStats = function(objConfig){
 		if(self.intBatch>=self.config.limit){ this.addData(self.batch); }
 		//this.runQ(self.batch);
 	};
-
+/*
+ source:{type:"uniq",path:"source"}
+      ,user:{type:"compete",path:"user",score:"score"}
+      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
+      ,score:{type:"numeric",path:"score"}
+    });
+    */
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
@@ -106,6 +136,7 @@ var SuddenStats = function(objConfig){
 		}
 		//console.log(arrData);
 	};
+
 
 	this.runQ = _.throttle(this.addData,self.config.throttle);
 

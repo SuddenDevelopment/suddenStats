@@ -80,10 +80,12 @@ describe('count all exact occurences of a valu egiven a json path', function () 
  it('should return max=6', function (done) {
     //test
     var objStats = new SuddenStats({stats:
-       source:{path:"source",type:"count"}
-      ,user:{path:"user",type:"count"}
-      ,score:{path:"score",type:"numeric"}
-      });
+       {source:{type:"uniq",path:"source"}
+      ,user:{type:"compete",path:"user",score:"score"}
+      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
+      ,score:{type:"numeric",path:"score"}
+    }
+    });
     objStats.addData(
       [
          {"source":"wikipedia","user":"anthony","score":11}
