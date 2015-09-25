@@ -82,7 +82,7 @@ describe('count all exact occurences of a valu egiven a json path', function () 
     var objStats = new SuddenStats({stats:
        {source:{type:"uniq",path:"source"}
       ,user:{type:"compete",path:"user",score:"score"}
-      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
+      ,user_source:{type:"co-occurence",path:"user",path2:"source"}
       ,score:{type:"numeric",path:"score"}
     }
     });
@@ -112,8 +112,9 @@ describe('count all exact occurences of a valu egiven a json path', function () 
       }
     }
     */
-    //console.log(objStats);
-   (objStats.stats.source.wikipedia.count).should.be.exactly(6);
+    console.log(objStats.stats);
+    //console.log(objStats.batch);
+   (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();
  });
 });

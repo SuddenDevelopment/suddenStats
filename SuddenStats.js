@@ -23,7 +23,9 @@ stat types:
   numeric=min,max,avg, etc.
   uniq=value,count
   compete=uniq+numeric
-  co-occurence=2 coinciding values count, uniq intersection count
+  co-occurence=2 coinciding values count, 
+
+TODO: move vars to private-ish like default configs
 
 */
 var _ = require('lodash');
@@ -35,10 +37,10 @@ var SuddenStats = function(objConfig){
 	this.stats = {};
 	this.batch = [];
 	this.intBatch = 0;
-	this.processing = false;
+	//this.processing = false;
 	this.objNumericDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
-	this.objUniqDefaults = {count:0,fs:Date.now(),ls:Date.now(),values:{}};
-	this.objCompeteDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
+	this.objUniqDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	this.objCompeteDefaults = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
 	var self=this;
 /*
  source:{type:"uniq",path:"source"}
@@ -50,6 +52,8 @@ var SuddenStats = function(objConfig){
 	this.init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//TODO: consider using _.defaultsDeep instead
+		//simple mode is only for when there are just arrays of numbers sent, if it's objects cant use simple mode
+		if(objConfig && objConfig.stats){ self.config.stats={}; }
 		//merge defaults and config provided.
 		self.config = _.merge(self.config,objConfig);
 		//create all of the stats properties for what will be tracked
@@ -114,7 +118,7 @@ var SuddenStats = function(objConfig){
 		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
-		if(self.simple){ self.updateStat(arrData,'primary'); }
+		if(self.simple===true){ self.updateStat(arrData,'primary'); }
 		else{
 			var arrBatch={};
 				_.forOwn(self.config.stats,function(objStat,strStat){
@@ -125,20 +129,50 @@ var SuddenStats = function(objConfig){
 			_.forEach(arrData,function(objData,k){
 				//stats loop
 				_.forOwn(self.config.stats,function(objStat,strStat){
+					var varValue;
+					//co-occurnce has 2 paths
+					if(objStat.type==='co-occurence'){ varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); }
+					else{ varValue = _.get(objData,objStat.path); }
 					//get the numbers from the object based on the path
-					arrBatch[strStat].data.push( _.get(objData,objStat.path) );
+					arrBatch[strStat].data.push( varValue );
 				});
 			});
 			_.forOwn(arrBatch,function(objStat,strStat){
-				//init the batch so all we have to do is push.
-				self.updateStat(objStat.data,arrBatch[strStat]);
+				console.log(strStat);
+				switch(self.stats[strStat].type){
+					case 'numeric':
+						self.updateStat(objStat.data,strStat);
+						break;
+					case 'uniq':
+						self.updateStat_uniq(objStat.data,strStat);
+						break;
+					case 'compete':
+						self.updateStat_compete(objStat.data,strStat);
+						break;
+					case 'co-occurence':
+						self.updateStat_uniq(objStat.data,strStat);
+						break;
+				}
 			});
 		}
-		//console.log(arrData);
 	};
 
 
 	this.runQ = _.throttle(this.addData,self.config.throttle);
+
+	this.updateStat_uniq = function(arrData, key){
+		//console.log(arrData);
+		var intCount = 1;
+		var v;
+		while(v=arrData.pop()){
+			if(self.stats[key].values.hasOwnProperty(v)){ self.stats[key].values[v]++; }
+			else{self.stats[key].values[v]=1;}
+			intCount = ((intCount | 1) + 1) | 1;
+		}
+		self.stats[key].count += intCount;
+	}
+
+	this.updateStat_compete = function(arrData, key){}
 
 	this.updateStat = function(arrData, key){
 		if (!(arrData instanceof Array)) {
