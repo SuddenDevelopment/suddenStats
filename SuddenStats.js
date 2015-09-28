@@ -21,9 +21,9 @@ objConfig={
 
 stat types:
   numeric=min,max,avg, etc.
-  uniq=value,count
-  compete=uniq+numeric
-  co-occurence=2 coinciding values count, 
+  uniq=value,count (also with substring search support)
+  compete=uniq+numeric (also with substring search support)
+  co-occurence=2 coinciding values count (also with substring search support)
 
 TODO: move vars to private-ish like default configs
 
@@ -130,9 +130,23 @@ var SuddenStats = function(objConfig){
 				//stats loop
 				_.forOwn(self.config.stats,function(objStat,strStat){
 					var varValue;
-					//co-occurnce has 2 paths
-					if(objStat.type==='co-occurence'){ varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); }
-					else{ varValue = _.get(objData,objStat.path); }
+					if(objStat.type==='co-occurence'){  }
+					else{  }
+					switch(objStat.type){
+						case 'numeric':
+							varValue = _.get(objData,objStat.path);
+							break;
+						case 'uniq':
+							varValue = _.get(objData,objStat.path);
+							break;
+						case 'compete':
+							varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)];
+							break;
+						case 'co-occurence':
+							//co-occurnce has 2 paths
+							varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2);
+							break;
+					}
 					//get the numbers from the object based on the path
 					arrBatch[strStat].data.push( varValue );
 				});
@@ -172,7 +186,16 @@ var SuddenStats = function(objConfig){
 		self.stats[key].count += intCount;
 	}
 
-	this.updateStat_compete = function(arrData, key){}
+	this.updateStat_compete = function(arrData, key){
+		var intCount = 1;
+		var v;
+		while(v=arrData.pop()){
+			if(self.stats[key].values.hasOwnProperty(v)){ self.stats[key].values[v]++; }
+			else{self.stats[key].values[v]=self.objCompeteDefaults;}
+			intCount = ((intCount | 1) + 1) | 1;
+		}
+		self.stats[key].count += intCount;
+	}
 
 	this.updateStat = function(arrData, key){
 		if (!(arrData instanceof Array)) {
