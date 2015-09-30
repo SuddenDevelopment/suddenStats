@@ -26,6 +26,8 @@ stat types:
   co-occurence=2 coinciding values count (also with substring search support)
 
 TODO: move vars to private-ish like default configs
+stat buckets
+last batch stats vs all time
 
 */
 var _ = require('lodash');
