@@ -80,11 +80,12 @@ describe('count all exact occurences of a valu egiven a json path', function () 
  it('should return max=6', function (done) {
     //test
     var objStats = new SuddenStats({stats:
-       {source:{type:"uniq",path:"source"}
-      ,user:{type:"compete",path:"user",score:"score"}
-      ,user_source:{type:"co-occurence",path:"user",path2:"source"}
-      ,score:{type:"numeric",path:"score"}
-    }
+       {
+         source:{type:"uniq",path:"source"}
+        ,user:{type:"compete",path:"user",score:"score"}
+        ,user_source:{type:"co-occurence",path:"user",path2:"source"}
+        ,score:{type:"numeric",path:"score"}
+      }
     });
     objStats.addData(
       [
@@ -112,7 +113,7 @@ describe('count all exact occurences of a valu egiven a json path', function () 
       }
     }
     */
-    console.log(objStats.stats);
+    //console.log(objStats.stats);
     //console.log(objStats.batch);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();

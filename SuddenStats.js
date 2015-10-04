@@ -40,9 +40,11 @@ var SuddenStats = function(objConfig){
 	this.batch = [];
 	this.intBatch = 0;
 	//this.processing = false;
-	this.objNumericDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
-	this.objUniqDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
-	this.objCompeteDefaults = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
+	var objNumericDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
+	var objUniqDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	var objCompeteDefaults = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
+	var objCoOccurenceDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+
 	var self=this;
 /*
  source:{type:"uniq",path:"source"}
@@ -58,23 +60,16 @@ var SuddenStats = function(objConfig){
 		if(objConfig && objConfig.stats){ self.config.stats={}; }
 		//merge defaults and config provided.
 		self.config = _.merge(self.config,objConfig);
+		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
 		_.forOwn(self.config.stats,function(objV,k){
 			//set defaults for stat
 			//add any user overrides to things like type
 			switch(objV.type){
-				case 'numeric':
-					self.stats[k] = _.merge(self.objNumericDefaults,objV);
-					break;
-				case 'uniq':
-					self.stats[k] = _.merge(self.objUniqDefaults,objV);
-					break;
-				case 'compete':
-					self.stats[k] = _.merge(self.objCompeteDefaults,objV);
-					break;
-				case 'co-occurence':
-					self.stats[k] = _.merge(self.objUniqDefaults,objV);
-					break;
+				case 'numeric': self.stats[k] = _.merge(objNumericDefaults,objV); break;
+				case 'uniq': self.stats[k] = _.merge(objUniqDefaults,objV); break;
+				case 'compete': self.stats[k] = _.merge(objCompeteDefaults,objV); break;
+				case 'co-occurence': self.stats[k] = _.merge(objCoOccurenceDefaults,objV); break;
 			}
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
@@ -123,52 +118,35 @@ var SuddenStats = function(objConfig){
 		if(self.simple===true){ self.updateStat(arrData,'primary'); }
 		else{
 			var arrBatch={};
-				_.forOwn(self.config.stats,function(objStat,strStat){
-					//init the batch so all we have to do is push.
-					arrBatch[strStat]={data:[]};
-				});
-			//data loop
+			_.forOwn(self.config.stats,function(objStat,strStat){
+				//init the batch so all we have to do is push.
+				arrBatch[strStat]={data:[]};
+			});
+			//----====|| LOOP THROUGH DATA GIVEN, CREATE STAT BATCHES ||====----\\
 			_.forEach(arrData,function(objData,k){
-				//stats loop
+				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
 				_.forOwn(self.config.stats,function(objStat,strStat){
-					var varValue;
-					if(objStat.type==='co-occurence'){  }
-					else{  }
+					var varValue =false;
 					switch(objStat.type){
-						case 'numeric':
-							varValue = _.get(objData,objStat.path);
-							break;
-						case 'uniq':
-							varValue = _.get(objData,objStat.path);
-							break;
-						case 'compete':
-							varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)];
-							break;
-						case 'co-occurence':
-							//co-occurnce has 2 paths
-							varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2);
-							break;
+						case 'numeric': varValue = _.get(objData,objStat.path); break;
+						case 'uniq': varValue = _.get(objData,objStat.path); break;
+						case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
+						case 'co-occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
 					}
 					//get the numbers from the object based on the path
-					arrBatch[strStat].data.push( varValue );
+					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 				});
 			});
+			//----====|| PROCESS STATS BATCHES ||====----\\
 			_.forOwn(arrBatch,function(objStat,strStat){
-				console.log(strStat);
-				switch(self.stats[strStat].type){
-					case 'numeric':
-						self.updateStat(objStat.data,strStat);
-						break;
-					case 'uniq':
-						self.updateStat_uniq(objStat.data,strStat);
-						break;
-					case 'compete':
-						self.updateStat_compete(objStat.data,strStat);
-						break;
-					case 'co-occurence':
-						self.updateStat_uniq(objStat.data,strStat);
-						break;
+				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
+				switch(self.config.stats[strStat].type){
+					case 'numeric': self.updateStat(objStat.data,strStat); break;
+					case 'uniq': self.updateStat_uniq(objStat.data,strStat); break;
+					case 'compete': self.updateStat_compete(objStat.data,strStat); break;
+					case 'co-occurence': self.updateStat_uniq(objStat.data,strStat); break;
 				}
+				arrBatch[strStat] = {};
 			});
 		}
 	};
@@ -177,7 +155,7 @@ var SuddenStats = function(objConfig){
 	this.runQ = _.throttle(this.addData,self.config.throttle);
 
 	this.updateStat_uniq = function(arrData, key){
-		//console.log(arrData);
+		//console.log(arrData,key);
 		var intCount = 1;
 		var v;
 		while(v=arrData.pop()){
@@ -197,6 +175,7 @@ var SuddenStats = function(objConfig){
 			intCount = ((intCount | 1) + 1) | 1;
 		}
 		self.stats[key].count += intCount;
+		//TODO: add the numeric stats for score
 	}
 
 	this.updateStat = function(arrData, key){
