@@ -41,10 +41,12 @@ var SuddenStats = function(objConfig){
 	this.batch = [];
 	this.intBatch = 0;
 	//this.processing = false;
-	var objNumericDefaults = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
-	var objUniqDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
-	var objCompeteDefaults = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
-	var objCoOccurenceDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	var objDefaults={};
+	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
+	 objDefaults.uniq = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	 objDefaults.compete = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
+	 objDefaults.co_occurence = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	 objDefaults.windows = {interval:3600,history:3};
 
 
 	//----====|| UTILITY FUNCTIONS ||====----\\
@@ -90,12 +92,7 @@ var SuddenStats = function(objConfig){
 		_forOwn(self.config.stats,function(objV,k){
 			//set defaults for stat
 			//add any user overrides to things like type
-			switch(objV.type){
-				case 'numeric': self.stats[k] = _defaults(objNumericDefaults,objV); break;
-				case 'uniq': self.stats[k] = _defaults(objUniqDefaults,objV); break;
-				case 'compete': self.stats[k] = _defaults(objCompeteDefaults,objV); break;
-				case 'co-occurence': self.stats[k] = _defaults(objCoOccurenceDefaults,objV); break;
-			}
+			self.stats[k] = _defaults(objV,objDefaults[objV.type]);
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
@@ -150,19 +147,34 @@ var SuddenStats = function(objConfig){
 						case 'numeric': varValue = _get(objData,objStat.path); break;
 						case 'uniq': varValue = _get(objData,objStat.path); break;
 						case 'compete': varValue = [_get(objData,objStat.path),_get(objData,objStat.score)]; break;
-						case 'co-occurence': varValue= _get(objData,objStat.path)+'_'+_get(objData,objStat.path2); break;
+						case 'co_occurence': varValue= _get(objData,objStat.path)+'_'+_get(objData,objStat.path2); break;
 					}
 					//get the numbers from the object based on the path
 					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 					//----====|| STATS WINDOWS ||====----\\
 					//is a window defined for the stat?
-					if(objStat.hasOwnProperty('windows')){
+					if(objStat.hasOwnProperty('windows') && typeof objStat.windows === 'array'){
 					//for each defined window
+						_forEach(objStat.windows,function(v,k){
 						//does a new bucket need to be created?
-							//take current bucket, snapshot it to history
-							//re-init current bucket
-							//process stats for current bucket
-						//drop off extra buckets, beyond the history in config, default is 3
+							if(objStat.windows[v.id].hasOwnProperty('current')){
+								//take current bucket, snapshot it to history
+								if(objStat.windows[v.id].current.fs < (Date.now()-objStat.windows[v.id].interval)/1000 ){
+									objStat.windows[v.id].history.push(objStat.windows[v.id].current)
+									//re-init current bucket
+									objStat.windows[v.id].current=_defaults({},objDefaults[objStat.type]);
+									//process stats for current bucket
+									//drop off extra buckets, beyond the history in config, default is 3
+									if(objStat.windows[v.id].history.length > objStat.windows[k].limit){
+										objStat.windows[v.id].history.slice(objStat.windows[k].limit * -1);
+									}
+								}
+							}else{ 
+								//init the windows for this stat
+								objStat.windows[v.id].current=_defaults({},objDefaults[objStat.type]); 
+								objStat.windows.history =[];
+							}
+						});
 					}
 				});
 			});
@@ -173,7 +185,7 @@ var SuddenStats = function(objConfig){
 					case 'numeric': self.updateStat(objStat.data,strStat); break;
 					case 'uniq': self.updateStat_uniq(objStat.data,strStat); break;
 					case 'compete': self.updateStat_compete(objStat.data,strStat); break;
-					case 'co-occurence': self.updateStat_uniq(objStat.data,strStat); break;
+					case 'co_occurence': self.updateStat_uniq(objStat.data,strStat); break;
 				}
 				arrBatch[strStat] = {};
 			});

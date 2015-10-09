@@ -51,9 +51,9 @@ describe('performance test', function () {
     var intStart= Date.now();
     for(var i=0;i<100000;i++){ objStats.addData([1,2,3,4,5,6]); }
     var intEnd= Date.now();
-	var intDuration= (intEnd-intStart)/1000;
+	var intDuration= (intEnd-intStart)/10000;
     //check
-     //console.log(intDuration);
+     console.log(intDuration);
    (intDuration).should.be.below(2);
    done();
  });
@@ -84,7 +84,7 @@ describe('count all exact occurences of a value given a json path', function () 
        {
          source:{type:"uniq",path:"source"}
         ,user:{type:"compete",path:"user",score:"score"}
-        ,user_source:{type:"co-occurence",path:"user",path2:"source"}
+        ,user_source:{type:"co_occurence",path:"user",path2:"source"}
         ,score:{type:"numeric",path:"score"}
       }
     });
