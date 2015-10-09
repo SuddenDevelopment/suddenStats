@@ -26,8 +26,9 @@ stat types:
   co-occurence=2 coinciding values count (also with substring search support)
 
 TODO: move vars to private-ish like default configs
-stat buckets
-last batch stats vs all time
+compete
+stat windows
+window history
 
 */
 var _ = require('lodash');
@@ -122,6 +123,14 @@ var SuddenStats = function(objConfig){
 					}
 					//get the numbers from the object based on the path
 					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
+					//----====|| STATS WINDOWS ||====----\\
+					//is a window defined for the stat?
+					//for each defined window
+						//does a new bucket need to be created?
+							//take current bucket, snapshot it to history
+							//re-init current bucket
+							//process stats for current bucket
+						//drop off extra buckets, beyond the history in config, default is 3
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\

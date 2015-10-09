@@ -67,8 +67,8 @@ var objStats = new SuddenStats({
       stats:
        {
         score:{type:"numeric",path:"score",windows:[
-			 {interval:60,history:60}
-        	,{interval:3600,history:24}
+			 {id:'minute',interval:60,history:60}
+        	,{id:'hour',interval:3600,history:24}
         ]}
       }
     });
