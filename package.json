@@ -6,9 +6,7 @@
   "contributors": [
     "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
-  "dependencies": {
-    "lodash": "^3.10.1"
-  },
+  "dependencies": {},
   "main": "suddenStats.js",
   "devDependencies": {
     "mocha": "^2.1.0",

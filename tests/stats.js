@@ -76,7 +76,7 @@ describe('batch test', function () {
  });
 });
 
-describe('count all exact occurences of a valu egiven a json path', function () {
+describe('count all exact occurences of a value given a json path', function () {
  it('should return max=6', function (done) {
     //test
     var objStats = new SuddenStats({
@@ -100,6 +100,7 @@ describe('count all exact occurences of a valu egiven a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
+    //console.log(objStats.config);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();
  });

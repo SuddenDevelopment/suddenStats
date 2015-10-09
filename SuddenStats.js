@@ -31,7 +31,7 @@ stat windows
 window history
 
 */
-var _ = require('lodash');
+//var _ = require('lodash');
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
 	this.config = {limit:1000,throttle:1000,stats:{primary:{type:'numeric'}}};
@@ -46,24 +46,55 @@ var SuddenStats = function(objConfig){
 	var objCompeteDefaults = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
 	var objCoOccurenceDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
 
+
+	//----====|| UTILITY FUNCTIONS ||====----\\
+	//get a value from a defined path in an object
+	var _get = function(objModel, strPath) {
+        var arrProps = strPath.split('.'),
+            prop = objModel;
+        for(var i = 0, len = arrProps.length; i < len; i++) {
+            if (typeof prop[arrProps[i]] !== 'undefined' && prop[arrProps[i]] !== null) { prop = prop[arrProps[i]];} 
+            else { return null;}
+        }
+        return prop;
+    };
+    //for each property in an object
+    var _forOwn = function(obj,fn){ _forEach(Object.keys(obj),function(v,k){ fn(obj[v],v); }); };
+    //trick forEach
+    var _forEach = function(arr,fn){
+    	var v,i=0;
+    	while(v=arr.pop()){ 
+    		fn(v,i); 
+    		i++;
+    	}
+    };
+    var _defaults = function(objTarget,objDefaults){
+    	_forOwn(objDefaults,function(v,k){ 
+    		if(!objTarget[k]){ objTarget[k]= v;}
+    		else if(typeof objTarget[k]==='object' && typeof objDefaults ==='object'){ _defaults(objTarget[k],objDefaults[k]); }
+    	});
+    	//console.log(objTarget,objDefaults);
+    	return objTarget;
+    };
+    //----====|| END UTILITY FUNCTIONS ||====----\\
+
 	var self=this;
 	this.init = function(objConfig){
 		//TODO: validate the structure of config passed in
-		//TODO: consider using _.defaultsDeep instead
 		//simple mode is only for when there are just arrays of numbers sent, if it's objects cant use simple mode
 		if(objConfig && objConfig.stats){ self.config.stats={}; }
 		//merge defaults and config provided.
-		self.config = _.merge(self.config,objConfig);
+		if(typeof objConfig==='object'){self.config = _defaults(self.config,objConfig);}
 		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
-		_.forOwn(self.config.stats,function(objV,k){
+		_forOwn(self.config.stats,function(objV,k){
 			//set defaults for stat
 			//add any user overrides to things like type
 			switch(objV.type){
-				case 'numeric': self.stats[k] = _.merge(objNumericDefaults,objV); break;
-				case 'uniq': self.stats[k] = _.merge(objUniqDefaults,objV); break;
-				case 'compete': self.stats[k] = _.merge(objCompeteDefaults,objV); break;
-				case 'co-occurence': self.stats[k] = _.merge(objCoOccurenceDefaults,objV); break;
+				case 'numeric': self.stats[k] = _defaults(objNumericDefaults,objV); break;
+				case 'uniq': self.stats[k] = _defaults(objUniqDefaults,objV); break;
+				case 'compete': self.stats[k] = _defaults(objCompeteDefaults,objV); break;
+				case 'co-occurence': self.stats[k] = _defaults(objCoOccurenceDefaults,objV); break;
 			}
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
@@ -106,35 +137,37 @@ var SuddenStats = function(objConfig){
 		if(self.simple===true){ self.updateStat(arrData,'primary'); }
 		else{
 			var arrBatch={};
-			_.forOwn(self.config.stats,function(objStat,strStat){
+			_forOwn(self.config.stats,function(objStat,strStat){
 				//init the batch so all we have to do is push.
 				arrBatch[strStat]={data:[]};
 			});
 			//----====|| LOOP THROUGH DATA GIVEN, CREATE STAT BATCHES ||====----\\
-			_.forEach(arrData,function(objData,k){
+			_forEach(arrData,function(objData,k){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
-				_.forOwn(self.config.stats,function(objStat,strStat){
+				_forOwn(self.config.stats,function(objStat,strStat){
 					var varValue =false;
 					switch(objStat.type){
-						case 'numeric': varValue = _.get(objData,objStat.path); break;
-						case 'uniq': varValue = _.get(objData,objStat.path); break;
-						case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
-						case 'co-occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
+						case 'numeric': varValue = _get(objData,objStat.path); break;
+						case 'uniq': varValue = _get(objData,objStat.path); break;
+						case 'compete': varValue = [_get(objData,objStat.path),_get(objData,objStat.score)]; break;
+						case 'co-occurence': varValue= _get(objData,objStat.path)+'_'+_get(objData,objStat.path2); break;
 					}
 					//get the numbers from the object based on the path
 					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 					//----====|| STATS WINDOWS ||====----\\
 					//is a window defined for the stat?
+					if(objStat.hasOwnProperty('windows')){
 					//for each defined window
 						//does a new bucket need to be created?
 							//take current bucket, snapshot it to history
 							//re-init current bucket
 							//process stats for current bucket
 						//drop off extra buckets, beyond the history in config, default is 3
+					}
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\
-			_.forOwn(arrBatch,function(objStat,strStat){
+			_forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
 				switch(self.config.stats[strStat].type){
 					case 'numeric': self.updateStat(objStat.data,strStat); break;
@@ -148,12 +181,12 @@ var SuddenStats = function(objConfig){
 	};
 
 
-	this.runQ = _.throttle(this.addData,self.config.throttle);
+	//this.runQ = _.throttle(this.addData,self.config.throttle);
 
 	this.updateStat_uniq = function(arrData, key){
 		//console.log(arrData,key);
-		var intCount = 1;
-		var v;
+		var intCount = 1,
+			v;
 		while(v=arrData.pop()){
 			if(self.stats[key].values.hasOwnProperty(v)){ self.stats[key].values[v]++; }
 			else{self.stats[key].values[v]=1;}
@@ -163,8 +196,8 @@ var SuddenStats = function(objConfig){
 	}
 
 	this.updateStat_compete = function(arrData, key){
-		var intCount = 1;
-		var v;
+		var intCount = 1,
+			v;
 		while(v=arrData.pop()){
 			if(self.stats[key].values.hasOwnProperty(v)){ self.stats[key].values[v]++; }
 			else{self.stats[key].values[v]=self.objCompeteDefaults;}
@@ -175,23 +208,22 @@ var SuddenStats = function(objConfig){
 	}
 
 	this.updateStat = function(arrData, key){
-		if (!(arrData instanceof Array)) {
-			arrData = [arrData];
-		}
+		if (!(arrData instanceof Array)) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
-		var intCount = 0;		
+		var intCount = 0,
+			v;	
 		//remember pop is backwards but fast https://jsperf.com/fastest-array-loops-in-javascript/401
 		//only run through the array once :)
-		var v;
+		
 		while(v=arrData.pop()){
 			if(intCount===0){ 
-				var intMin = v; 
-				var intMax = v;
-				var intSum = v;
-				var intAvg = v;
-				var intFirst = v;
-				var intLast = v; 
+				var intMin = v,
+					intMax = v,
+					intSum = v,
+					intAvg = v,
+					intFirst = v,
+					intLast = v; 
 			}
 			else{
 				if(v<intMin){ intMin=v; }
@@ -213,5 +245,6 @@ var SuddenStats = function(objConfig){
 		self.stats[key].diff = intAvg-self.stats[key].lastAvg;
 		self.stats[key].lastAvg = intAvg;
 	};
+	
 };
 module.exports = SuddenStats;
