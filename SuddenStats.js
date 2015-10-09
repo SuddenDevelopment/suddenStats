@@ -46,13 +46,6 @@ var SuddenStats = function(objConfig){
 	var objCoOccurenceDefaults = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
 
 	var self=this;
-/*
- source:{type:"uniq",path:"source"}
-      ,user:{type:"compete",path:"user",score:"score"}
-      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
-      ,score:{type:"numeric",path:"score"}
-    });
-    */
 	this.init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//TODO: consider using _.defaultsDeep instead
@@ -102,13 +95,7 @@ var SuddenStats = function(objConfig){
 		if(self.intBatch>=self.config.limit){ this.addData(self.batch); }
 		//this.runQ(self.batch);
 	};
-/*
- source:{type:"uniq",path:"source"}
-      ,user:{type:"compete",path:"user",score:"score"}
-      ,user_source:{type:"co-occurence",path1:"user",path2:"source"}
-      ,score:{type:"numeric",path:"score"}
-    });
-    */
+
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches

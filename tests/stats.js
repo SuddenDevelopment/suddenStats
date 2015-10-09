@@ -79,7 +79,8 @@ describe('batch test', function () {
 describe('count all exact occurences of a valu egiven a json path', function () {
  it('should return max=6', function (done) {
     //test
-    var objStats = new SuddenStats({stats:
+    var objStats = new SuddenStats({
+      stats:
        {
          source:{type:"uniq",path:"source"}
         ,user:{type:"compete",path:"user",score:"score"}
@@ -99,22 +100,6 @@ describe('count all exact occurences of a valu egiven a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    //check
-    /*
-    stats:{
-      source:{
-        wikipedia:6
-        ,twitter:2
-      }
-      ,user:{
-        anthony:
-        ,randall:
-        ,wes:
-      }
-    }
-    */
-    //console.log(objStats.stats);
-    //console.log(objStats.batch);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();
  });
