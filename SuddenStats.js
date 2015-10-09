@@ -29,6 +29,7 @@ TODO: move vars to private-ish like default configs
 compete
 stat windows
 window history
+conditional config based on properties in passed in object, if it has this property, use this path etc.
 
 */
 //var _ = require('lodash');
@@ -40,6 +41,7 @@ var SuddenStats = function(objConfig){
 	this.stats = {};
 	this.batch = [];
 	this.intBatch = 0;
+	this.updateStats = {};
 	//this.processing = false;
 	var objDefaults={};
 	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
@@ -131,7 +133,7 @@ var SuddenStats = function(objConfig){
 		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
-		if(self.simple===true){ self.updateStat(arrData,'primary'); }
+		if(self.simple===true){ self.updateStats['numeric'](arrData,'primary'); }
 		else{
 			var arrBatch={};
 			_forOwn(self.config.stats,function(objStat,strStat){
@@ -157,22 +159,22 @@ var SuddenStats = function(objConfig){
 					//for each defined window
 						_forEach(objStat.windows,function(v,k){
 						//does a new bucket need to be created?
-							if(objStat.windows[v.id].hasOwnProperty('current')){
+							if(self.stats[strStat].windows[v.id].hasOwnProperty('current')){
 								//take current bucket, snapshot it to history
-								if(objStat.windows[v.id].current.fs < (Date.now()-objStat.windows[v.id].interval)/1000 ){
-									objStat.windows[v.id].history.push(objStat.windows[v.id].current)
+								if(self.stats[strStat].windows[v.id].current.fs < (Date.now()-self.stats[strStat].windows[v.id].interval)/1000 ){
+									self.stats[strStat].windows[v.id].history.push(self.stats[strStat].windows[v.id].current)
 									//re-init current bucket
-									objStat.windows[v.id].current=_defaults({},objDefaults[objStat.type]);
+									self.stats[strStat].windows[v.id].current=_defaults({},objDefaults[objStat.type]);
 									//process stats for current bucket
 									//drop off extra buckets, beyond the history in config, default is 3
-									if(objStat.windows[v.id].history.length > objStat.windows[k].limit){
-										objStat.windows[v.id].history.slice(objStat.windows[k].limit * -1);
+									if(self.stats[strStat].windows[v.id].history.length > self.stats[strStat].windows[k].limit){
+										self.stats[strStat].windows[v.id].history.slice(self.stats[strStat].windows[k].limit * -1);
 									}
 								}
 							}else{ 
 								//init the windows for this stat
-								objStat.windows[v.id].current=_defaults({},objDefaults[objStat.type]); 
-								objStat.windows.history =[];
+								self.stats[strStat].windows[v.id].current=_defaults({},objDefaults[objStat.type]); 
+								self.stats[strStat].windows.history =[];
 							}
 						});
 					}
@@ -181,12 +183,7 @@ var SuddenStats = function(objConfig){
 			//----====|| PROCESS STATS BATCHES ||====----\\
 			_forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
-				switch(self.config.stats[strStat].type){
-					case 'numeric': self.updateStat(objStat.data,strStat); break;
-					case 'uniq': self.updateStat_uniq(objStat.data,strStat); break;
-					case 'compete': self.updateStat_compete(objStat.data,strStat); break;
-					case 'co_occurence': self.updateStat_uniq(objStat.data,strStat); break;
-				}
+				self.updateStats[self.config.stats[strStat].type](objStat.data,strStat);
 				arrBatch[strStat] = {};
 			});
 		}
@@ -195,7 +192,7 @@ var SuddenStats = function(objConfig){
 
 	//this.runQ = _.throttle(this.addData,self.config.throttle);
 
-	this.updateStat_uniq = function(arrData, key){
+	this.updateStats.uniq = function(arrData, key){
 		//console.log(arrData,key);
 		var intCount = 1,
 			v;
@@ -207,7 +204,7 @@ var SuddenStats = function(objConfig){
 		self.stats[key].count += intCount;
 	}
 
-	this.updateStat_compete = function(arrData, key){
+	this.updateStats.compete = function(arrData, key){
 		var intCount = 1,
 			v;
 		while(v=arrData.pop()){
@@ -219,7 +216,9 @@ var SuddenStats = function(objConfig){
 		//TODO: add the numeric stats for score
 	}
 
-	this.updateStat = function(arrData, key){
+	this.updateStats.co_occurence = this.updateStats.uniq;
+
+	this.updateStats.numeric = function(arrData, key){
 		if (!(arrData instanceof Array)) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
