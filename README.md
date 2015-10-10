@@ -62,14 +62,11 @@ var objStats = new SuddenStats({
 
 Define with windows
 ```
-//pass in a config for stats, keep 1 minute windows for and hour and hourly windows for 1 day
+//pass in a config for stats, keep 1 minute windows for and hour and hourly windows for 1 day, minute,hour,day :only define largets window, the others are assumed
 var objStats = new SuddenStats({
       stats:
        {
-        score:{type:"numeric",path:"score",windows:[
-			 {id:'minute',interval:60,limit:60}
-        	,{id:'hour',interval:3600,limit:24}
-        ]}
+        score:{type:"numeric",path:"score",windows:'day'}
       }
     });
 ```

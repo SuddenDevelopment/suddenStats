@@ -105,3 +105,30 @@ describe('count all exact occurences of a value given a json path', function () 
    done();
  });
 });
+
+
+describe('make sure a current bucket is filling for windows', function () {
+ it('should return count=8', function (done) {
+    //test
+    var objStats = new SuddenStats({
+      stats:{ 
+        score:{type:"numeric",path:"score",windows:'day'}
+        }
+    });
+    objStats.addData(
+      [
+         {"source":"wikipedia","user":"anthony","score":11}
+        ,{"source":"wikipedia","user":"randall","score":19}
+        ,{"source":"twitter","user":"anthony","score":8}
+        ,{"source":"wikipedia","user":"wes","score":33}
+        ,{"source":"wikipedia","user":"anthony","score":78}
+        ,{"source":"wikipedia","user":"wes","score":43}
+        ,{"source":"twitter","user":"wes","score":56}
+        ,{"source":"wikipedia","user":"randall","score":24}
+      ]
+    ); 
+    //console.log(objStats.config);
+   (objStats.stats.score.windows.minute.current.count).should.be.exactly(8);
+   done();
+ });
+});
