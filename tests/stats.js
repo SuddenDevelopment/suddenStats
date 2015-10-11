@@ -21,7 +21,7 @@ describe('get a diff between stat batches', function () {
     objStats.addData([1,2,3,4,5,6]); 
     objStats.addData([15,16,17,18,19,]);
     //check
-    console.log(objStats);
+    //console.log(objStats);
    (objStats.stats.primary.diff).should.be.exactly(13.5);
    done();
  });
@@ -47,14 +47,17 @@ describe('addData', function () {
 describe('performance test', function () {
  it('target is 50k/second', function (done) {
     //test
+     this.timeout(15000);
+
+    var intCount=10000000;
     var objStats = new SuddenStats();
     var intStart= Date.now();
-    for(var i=0;i<100000;i++){ objStats.addData([1,2,3,4,5,6]); }
+    for(var i=0;i<intCount;i++){ objStats.addData([1,2,3,4,5,6]); }
     var intEnd= Date.now();
-	var intDuration= (intEnd-intStart)/10000;
+	var intDuration= intCount/((intEnd-intStart)/1000);
     //check
-     console.log(intDuration);
-   (intDuration).should.be.below(2);
+     console.log(intDuration,':per second');
+   (intDuration).should.be.above(50000);
    done();
  });
 });

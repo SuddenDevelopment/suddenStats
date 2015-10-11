@@ -41,9 +41,8 @@ var SuddenStats = function(objConfig){
 	this.stats = {};
 	this.batch = [];
 	this.intBatch = 0;
-	this.updateStats = {};
 	//this.processing = false;
-	var objDefaults={};
+	var objDefaults={},updateStats = {},aggStats={};
 	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
 	 objDefaults.uniq = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
 	 objDefaults.compete = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
@@ -81,10 +80,17 @@ var SuddenStats = function(objConfig){
     	//console.log(objTarget,objDefaults);
     	return objTarget;
     };
+    var _filterOld = function(arrData,strPath,intValue){
+		var arrFresh=[];
+    	_forEach(arrData,function(v,k){
+    		if(_get(v,strPath) > intValue){ arrFresh.push(v); }
+    	});
+    	return arrFresh;
+    }
     //----====|| END UTILITY FUNCTIONS ||====----\\
 
 	var self=this;
-	this.init = function(objConfig){
+	var init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//simple mode is only for when there are just arrays of numbers sent, if it's objects cant use simple mode
 		if(objConfig && objConfig.stats){ self.config.stats={}; }
@@ -99,18 +105,24 @@ var SuddenStats = function(objConfig){
 			self.stats[k] = _defaults(objStat,objDefaults[objStat.type]);
 			//init the windows
 			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
-				self.stats[k].windows={};
+				self.stats[k].windows={ts_minute:false};
 				self.stats[k].windows.current = _defaults({},objDefaults[objStat.type]);
 				self.stats[k].windows.minute=[];
-				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ self.stats[k].windows.hour=[]; }
-				if(self.config.stats[k].level=='day'){ self.stats[k].windows.day=[]; }
+				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
+					self.stats[k].windows.ts_hour=false;
+					self.stats[k].windows.hour=[]; 
+				}
+				if(self.config.stats[k].level=='day'){
+					self.stats[k].windows.ts_day=false;
+					self.stats[k].windows.day=[]; 
+				}
 			}
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
 	}
 
-	this.init(objConfig);
+	init(objConfig);
 
 	this.qData = function(varData){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
@@ -143,7 +155,7 @@ var SuddenStats = function(objConfig){
 		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
-		if(self.simple===true){ self.stats.primary = self.updateStats['numeric'](arrData,self.stats.primary); }
+		if(self.simple===true){ self.stats.primary = updateStats['numeric'](arrData,self.stats.primary); }
 		else{
 			var arrBatch={};
 			_forOwn(self.config.stats,function(objStat,strStat){
@@ -168,61 +180,48 @@ var SuddenStats = function(objConfig){
 			//----====|| PROCESS STATS BATCHES ||====----\\
 			_forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
+				self.stats[strStat]=updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//----====|| STATS WINDOWS ||====----\\
 				//is a window defined for the stat?
 				if(self.stats[strStat].hasOwnProperty('level')){
-					self.stats[strStat]=self.updateWindows(objStat.data,self.stats[strStat]); 
+					self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]); 
 				}
-				self.stats[strStat]=self.updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//console.log(arrBatch);
 				arrBatch[strStat] = {};
 			});
 		}
 	};
 
-	this.updateWindows = function(arrData, objStat){
+	var updateWindows = function(arrData, objStat){
 		//console.log(arrData,objStat);
 		//does a new bucket need to be created?
-		if(objStat.windows.current.fs < Date.now()/60000 ){
+		var intNow=Date.now();
+		if(objStat.windows.current.fs < intNow/60000 ){
 			//take current bucket, snapshot it to history
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
 			objStat.windows.current = _defaults({},objDefaults[objStat.type]);
+			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < intNow-360000){
+				//loop through minutes and drop off anything older than an hour
+				objStat.windows.minute = _filterOld(objStat.windows.minute, 'fs', 360000)
+				//then take the remaining ones to aggregate into an hour
+				objStat.windows.hour.push( aggStats[objStat.type](objStat.windows.minute) );
+				objStat.windows.ts_hour = intNow;
+			}
+			if(objStat.windows.hasOwnProperty('day') && objStat.windows.ts_hour < intNow-86400000){
+				//loop through minutes and drop off anything older than an hour
+				objStat.windows.hour = _filterOld(objStat.windows.hour, 'fs', 86400000)
+				//then take the remaining ones to aggregate into an hour
+				objStat.windows.day.push( aggStats[objStat.type](objStat.windows.hour) );
+				objStat.windows.ts_day = intNow;
+			}			
 		}
 		//process current
-		objStat.windows.current = self.updateStats[objStat.type](arrData,objStat.windows.current);
-		//console.log(objStat.windows.current);
-		//drop off extra buckets, 60 minutes, 24 hours, 7 days, 52 weeks
-		//cascade aggregates up to highest level defined
-
-
-		/*
-		_forOwn(objStat.windows,function(v,k){
-			//does a new bucket need to be created?
-				if(self.stats[strStat].windows[k] && self.stats[strStat].windows[k].hasOwnProperty('current')){
-					//take current bucket, snapshot it to history
-					if(self.stats[strStat].windows[k].current.fs < (Date.now()-self.stats[strStat].windows[k].interval)/1000 ){
-						self.stats[strStat].windows[k].history.push(self.stats[strStat].windows[k].current)
-						//re-init current bucket
-						self.stats[strStat].windows[k].current=_defaults({},objDefaults[objStat.type]);
-						//drop off extra buckets, beyond the history in config, default is 3
-						if(self.stats[strStat].windows[k].history.length > self.stats[strStat].windows[k].limit){
-							self.stats[strStat].windows[k].history = self.stats[strStat].windows[k].history.slice(self.stats[strStat].windows[k].limit * -1);
-						}
-					}
-				}else{ 
-					//init the windows for this stat
-					self.stats[strStat].windows[k].current=_defaults({},objDefaults[objStat.type]); 
-					self.stats[strStat].windows.history =[];
-				}
-			});
-		*/
+		objStat.windows.current = updateStats[objStat.type](arrData,objStat.windows.current);
 		return objStat;
 	}
 
-	//this.runQ = _.throttle(this.addData,self.config.throttle);
-
-	this.updateStats.uniq = function(arrData, objStat){
+	updateStats.uniq = function(arrData, objStat){
 		//console.log(arrData,key);
 		var intCount = 1,
 			v;
@@ -235,7 +234,7 @@ var SuddenStats = function(objConfig){
 		return objStat;
 	}
 
-	this.updateStats.compete = function(arrData, objStat){
+	updateStats.compete = function(arrData, objStat){
 		var intCount = 1,
 			v;
 		while(v=arrData.pop()){
@@ -248,9 +247,9 @@ var SuddenStats = function(objConfig){
 		return objStat;
 	}
 
-	this.updateStats.co_occurence = this.updateStats.uniq;
+	updateStats.co_occurence = updateStats.uniq;
 
-	this.updateStats.numeric = function(arrData, objStat){
+	updateStats.numeric = function(arrData, objStat){
 		if (!(arrData instanceof Array)) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
@@ -283,5 +282,9 @@ var SuddenStats = function(objConfig){
 		return objStat;
 	};
 	
+	aggStats.numeric = function(arrData){
+
+		return objAgg;
+	}
 };
 module.exports = SuddenStats;
