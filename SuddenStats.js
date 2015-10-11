@@ -72,6 +72,7 @@ var SuddenStats = function(objConfig){
     		i++;
     	}
     };
+    var _for = function(arr,fn){ for(var i=arr.length-1;i>=0;i--){ fn(arr[i],i); } }
     var _defaults = function(objTarget,objDefaults){
     	_forOwn(objDefaults,function(v,k){ 
     		if(!objTarget[k]){ objTarget[k]= v;}
@@ -173,7 +174,7 @@ var SuddenStats = function(objConfig){
 					self.stats[strStat]=self.updateWindows(objStat.data,self.stats[strStat]); 
 				}
 				self.stats[strStat]=self.updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
-				console.log(arrBatch);
+				//console.log(arrBatch);
 				arrBatch[strStat] = {};
 			});
 		}
@@ -257,13 +258,13 @@ var SuddenStats = function(objConfig){
 			intMin,
 			intMax=0,
 			intSum=0,
-			intAvg,
+			intTotal=0,
 			intFirst=arrData[0],
 			intLast=arrData[0];
-		_forEach(arrData,function(v,k){
+		_for(arrData,function(v,k){
 			if(v<intMin){ intMin=v; }
 			if(v>intMax){ intMax=v; }
-			intSum = intSum+v;
+			intSum += v;
 			intFirst = v;
 			intCount++;
 		});
@@ -271,7 +272,8 @@ var SuddenStats = function(objConfig){
 		if( intMin < objStat.min || objStat.first===false ){ objStat.min = intMin; }
 		if( intMax > objStat.max ){ objStat.max = intMax; }
 		objStat.count = objStat.count + intCount;
-		objStat.total = objStat.total + intSum;
+		objStat.total += intSum;
+		
 		objStat.last = intLast;
 		if( objStat.first===false ){ objStat.first = intFirst; objStat.fs=Date.now(); }
 		objStat.ls=Date.now();
