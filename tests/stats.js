@@ -112,7 +112,7 @@ describe('make sure a current bucket is filling for windows', function () {
     //test
     var objStats = new SuddenStats({
       stats:{ 
-        score:{type:"numeric",path:"score",windows:'day'}
+        score:{type:"numeric",path:"score",level:'day'}
         }
     });
     objStats.addData(
@@ -127,8 +127,9 @@ describe('make sure a current bucket is filling for windows', function () {
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    //console.log(objStats.config);
-   (objStats.stats.score.windows.minute.current.count).should.be.exactly(8);
+    //console.log(objStats);
+   (objStats.stats.score.windows.current.count).should.be.exactly(8);
+   (objStats.stats.score.total).should.be.exactly(272);
    done();
  });
 });

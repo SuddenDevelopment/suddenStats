@@ -91,11 +91,19 @@ var SuddenStats = function(objConfig){
 		if(typeof objConfig==='object'){self.config = _defaults(self.config,objConfig);}
 		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
-		_forOwn(self.config.stats,function(objV,k){
+		_forOwn(self.config.stats,function(objStat,k){
 			//console.log(objV,k);
 			//set defaults for stat
 			//add any user overrides to things like type
-			self.stats[k] = _defaults(objV,objDefaults[objV.type]);
+			self.stats[k] = _defaults(objStat,objDefaults[objStat.type]);
+			//init the windows
+			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
+				self.stats[k].windows={};
+				self.stats[k].windows.current = _defaults({},objDefaults[objStat.type]);
+				self.stats[k].windows.minute=[];
+				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ self.stats[k].windows.hour=[]; }
+				if(self.config.stats[k].level=='day'){ self.stats[k].windows.day=[]; }
+			}
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
@@ -159,19 +167,30 @@ var SuddenStats = function(objConfig){
 			//----====|| PROCESS STATS BATCHES ||====----\\
 			_forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
-				self.stats[strStat]=self.updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//----====|| STATS WINDOWS ||====----\\
 				//is a window defined for the stat?
-				if(objStat.hasOwnProperty('windows') && objDefaults.windows.hasOwnProperty(objStat.windows)){ this.updateWindows(objStat.data,strStat); }
+				if(self.stats[strStat].hasOwnProperty('level')){
+					self.stats[strStat]=self.updateWindows(objStat.data,self.stats[strStat]); 
+				}
+				self.stats[strStat]=self.updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
+				console.log(arrBatch);
 				arrBatch[strStat] = {};
 			});
 		}
 	};
 
-	this.updateWindows = function(arrData, key){
+	this.updateWindows = function(arrData, objStat){
+		//console.log(arrData,objStat);
 		//does a new bucket need to be created?
-		//take current bucket, snapshot it to history
-		//re-init current bucket
+		if(objStat.windows.current.fs < Date.now()/60000 ){
+			//take current bucket, snapshot it to history
+			objStat.windows.minute.push(objStat.windows.current);
+			//re-init current bucket
+			objStat.windows.current = _defaults({},objDefaults[objStat.type]);
+		}
+		//process current
+		objStat.windows.current = self.updateStats[objStat.type](arrData,objStat.windows.current);
+		//console.log(objStat.windows.current);
 		//drop off extra buckets, 60 minutes, 24 hours, 7 days, 52 weeks
 		//cascade aggregates up to highest level defined
 
@@ -197,6 +216,7 @@ var SuddenStats = function(objConfig){
 				}
 			});
 		*/
+		return objStat;
 	}
 
 	//this.runQ = _.throttle(this.addData,self.config.throttle);
