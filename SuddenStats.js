@@ -254,27 +254,19 @@ var SuddenStats = function(objConfig){
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
 		var intCount = 0,
-			v;	
-		//remember pop is backwards but fast https://jsperf.com/fastest-array-loops-in-javascript/401
-		//only run through the array once :)
-		
-		while(v=arrData.pop()){
-			if(intCount===0){ 
-				var intMin = v,
-					intMax = v,
-					intSum = v,
-					intAvg = v,
-					intFirst = v,
-					intLast = v; 
-			}
-			else{
-				if(v<intMin){ intMin=v; }
-				if(v>intMax){ intMax=v; }
-				intSum = intSum+v;
-				intFirst = v;
-			}
+			intMin,
+			intMax=0,
+			intSum=0,
+			intAvg,
+			intFirst=arrData[0],
+			intLast=arrData[0];
+		_forEach(arrData,function(v,k){
+			if(v<intMin){ intMin=v; }
+			if(v>intMax){ intMax=v; }
+			intSum = intSum+v;
+			intFirst = v;
 			intCount++;
-		}
+		});
 		var intAvg = intSum/intCount;
 		if( intMin < objStat.min || objStat.first===false ){ objStat.min = intMin; }
 		if( intMax > objStat.max ){ objStat.max = intMax; }

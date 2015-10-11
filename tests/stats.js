@@ -21,7 +21,7 @@ describe('get a diff between stat batches', function () {
     objStats.addData([1,2,3,4,5,6]); 
     objStats.addData([15,16,17,18,19,]);
     //check
-    //console.log(objStats);
+    console.log(objStats);
    (objStats.stats.primary.diff).should.be.exactly(13.5);
    done();
  });
