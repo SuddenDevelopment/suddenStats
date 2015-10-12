@@ -32,7 +32,8 @@ window history
 conditional config based on properties in passed in object, if it has this property, use this path etc.
 
 */
-//var _ = require('lodash');
+var utils = require('./utils.js');
+var _ = new utils;
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
 	this.config = {limit:1000,throttle:1000,stats:{primary:{type:'numeric'}}};
@@ -49,64 +50,24 @@ var SuddenStats = function(objConfig){
 	 objDefaults.co_occurence = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
-
-	//----====|| UTILITY FUNCTIONS ||====----\\
-	//get a value from a defined path in an object
-	var _get = function(objModel, strPath) {
-        var arrProps = strPath.split('.'),
-            prop = objModel;
-        for(var i = 0, len = arrProps.length; i < len; i++) {
-            if (typeof prop[arrProps[i]] !== 'undefined' && prop[arrProps[i]] !== null) { prop = prop[arrProps[i]];} 
-            else { return null;}
-        }
-        return prop;
-    };
-    //for each property in an object
-    var _forOwn = function(obj,fn){ _forEach(Object.keys(obj),function(v,k){ fn(obj[v],v); }); };
-    //trick forEach
-    var _forEach = function(arr,fn){
-    	var v,i=0;
-    	while(v=arr.pop()){ 
-    		fn(v,i); 
-    		i++;
-    	}
-    };
-    var _for = function(arr,fn){ for(var i=arr.length-1;i>=0;i--){ fn(arr[i],i); } }
-    var _defaults = function(objTarget,objDefaults){
-    	_forOwn(objDefaults,function(v,k){ 
-    		if(!objTarget[k]){ objTarget[k]= v;}
-    		else if(typeof objTarget[k]==='object' && typeof objDefaults ==='object'){ _defaults(objTarget[k],objDefaults[k]); }
-    	});
-    	//console.log(objTarget,objDefaults);
-    	return objTarget;
-    };
-    var _filterOld = function(arrData,strPath,intValue){
-		var arrFresh=[];
-    	_forEach(arrData,function(v,k){
-    		if(_get(v,strPath) > intValue){ arrFresh.push(v); }
-    	});
-    	return arrFresh;
-    }
-    //----====|| END UTILITY FUNCTIONS ||====----\\
-
 	var self=this;
 	var init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//simple mode is only for when there are just arrays of numbers sent, if it's objects cant use simple mode
 		if(objConfig && objConfig.stats){ self.config.stats={}; }
 		//merge defaults and config provided.
-		if(typeof objConfig==='object'){self.config = _defaults(self.config,objConfig);}
+		if(typeof objConfig==='object'){self.config = _.defaults(self.config,objConfig);}
 		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
-		_forOwn(self.config.stats,function(objStat,k){
+		_.forOwn(self.config.stats,function(objStat,k){
 			//console.log(objV,k);
 			//set defaults for stat
 			//add any user overrides to things like type
-			self.stats[k] = _defaults(objStat,objDefaults[objStat.type]);
+			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]);
 			//init the windows
 			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
 				self.stats[k].windows={ts_minute:false};
-				self.stats[k].windows.current = _defaults({},objDefaults[objStat.type]);
+				self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]);
 				self.stats[k].windows.minute=[];
 				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
 					self.stats[k].windows.ts_hour=false;
@@ -158,27 +119,27 @@ var SuddenStats = function(objConfig){
 		if(self.simple===true){ self.stats.primary = updateStats['numeric'](arrData,self.stats.primary); }
 		else{
 			var arrBatch={};
-			_forOwn(self.config.stats,function(objStat,strStat){
+			_.forOwn(self.config.stats,function(objStat,strStat){
 				//init the batch so all we have to do is push.
 				arrBatch[strStat]={data:[]};
 			});
 			//----====|| LOOP THROUGH DATA GIVEN, CREATE STAT BATCHES ||====----\\
-			_forEach(arrData,function(objData,k){
+			_.forEach(arrData,function(objData,k){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
-				_forOwn(self.config.stats,function(objStat,strStat){
+				_.forOwn(self.config.stats,function(objStat,strStat){
 					var varValue =false;
 					switch(objStat.type){
-						case 'numeric': varValue = _get(objData,objStat.path); break;
-						case 'uniq': varValue = _get(objData,objStat.path); break;
-						case 'compete': varValue = [_get(objData,objStat.path),_get(objData,objStat.score)]; break;
-						case 'co_occurence': varValue= _get(objData,objStat.path)+'_'+_get(objData,objStat.path2); break;
+						case 'numeric': varValue = _.get(objData,objStat.path); break;
+						case 'uniq': varValue = _.get(objData,objStat.path); break;
+						case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
+						case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
 					}
 					//get the numbers from the object based on the path
 					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\
-			_forOwn(arrBatch,function(objStat,strStat){
+			_.forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
 				self.stats[strStat]=updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//----====|| STATS WINDOWS ||====----\\
@@ -200,17 +161,17 @@ var SuddenStats = function(objConfig){
 			//take current bucket, snapshot it to history
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
-			objStat.windows.current = _defaults({},objDefaults[objStat.type]);
+			objStat.windows.current = _.defaults({},objDefaults[objStat.type]);
 			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < intNow-360000){
 				//loop through minutes and drop off anything older than an hour
-				objStat.windows.minute = _filterOld(objStat.windows.minute, 'fs', 360000)
+				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000)
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.hour.push( aggStats[objStat.type](objStat.windows.minute) );
 				objStat.windows.ts_hour = intNow;
 			}
 			if(objStat.windows.hasOwnProperty('day') && objStat.windows.ts_hour < intNow-86400000){
 				//loop through minutes and drop off anything older than an hour
-				objStat.windows.hour = _filterOld(objStat.windows.hour, 'fs', 86400000)
+				objStat.windows.hour = _.filterOld(objStat.windows.hour, 'fs', 86400000)
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.day.push( aggStats[objStat.type](objStat.windows.hour) );
 				objStat.windows.ts_day = intNow;
@@ -261,7 +222,7 @@ var SuddenStats = function(objConfig){
 			intTotal=0,
 			intFirst=arrData[0],
 			intLast=arrData[0];
-		_for(arrData,function(v,k){
+		_.for(arrData,function(v,k){
 			if(v<intMin){ intMin=v; }
 			if(v>intMax){ intMax=v; }
 			intSum += v;
@@ -284,8 +245,8 @@ var SuddenStats = function(objConfig){
 	};
 	
 	aggStats.numeric = function(arrData){
-		var objAgg = _defaults({},objDefaults.numeric);
-		_forEach(arrData,function(v,k){
+		var objAgg = _.defaults({},objDefaults.numeric);
+		_.forEach(arrData,function(v,k){
 			if(v.min < objAgg.min){ objAgg.min = v.min; }
 			if(v.max > objAgg.max){ objAgg.max = v.max; }
 			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
@@ -297,14 +258,14 @@ var SuddenStats = function(objConfig){
 		return objAgg;
 	}
 	aggStats.uniq = function(arrData){
-		var objAgg = _defaults({},objDefaults.uniq);
+		var objAgg = _.defaults({},objDefaults.uniq);
 		var intCount=0;
-		_forEach(arrData,function(v,k){
+		_.forEach(arrData,function(v,k){
 			//get top level stats
 			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
 			if(v.ls > objAgg.ls){ objAgg.max = v.ls; }
 			objAgg.total += v.total;
-			_for(v.values,function(vv,kk){
+			_.for(v.values,function(vv,kk){
 				if(objAgg.values.hasOwnproperty(kk)){ objAgg.values[kk] += vv; }
 				else{ objAgg.values[kk] = vv; intCount++; }
 			});
