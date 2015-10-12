@@ -44,7 +44,7 @@ var SuddenStats = function(objConfig){
 	//this.processing = false;
 	var objDefaults={},updateStats = {},aggStats={};
 	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
-	 objDefaults.uniq = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	 objDefaults.uniq = {limit:100,count:0,fs:Date.now(),ls:Date.now(),min:0,max:0,total:0,avg:0,values:{}};
 	 objDefaults.compete = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
 	 objDefaults.co_occurence = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
@@ -223,14 +223,15 @@ var SuddenStats = function(objConfig){
 
 	updateStats.uniq = function(arrData, objStat){
 		//console.log(arrData,key);
-		var intCount = 1,
+		var intTotal=1, intCount=1,
 			v;
 		while(v=arrData.pop()){
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
-			else{objStat.values[v]=1;}
-			intCount = ((intCount | 1) + 1) | 1;
+			else{objStat.values[v]=1; intCount++; }
+			intTotal = ((intTotal | 1) + 1) | 1;
 		}
-		objStat.count += intCount;
+		objStat.total += intTotal;
+		objStat.count = intCount;
 		return objStat;
 	}
 
@@ -254,7 +255,7 @@ var SuddenStats = function(objConfig){
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
 		var intCount = 0,
-			intMin,
+			intMin=arrData[0],
 			intMax=0,
 			intSum=0,
 			intTotal=0,
@@ -283,8 +284,35 @@ var SuddenStats = function(objConfig){
 	};
 	
 	aggStats.numeric = function(arrData){
-
+		var objAgg = _defaults({},objDefaults.numeric);
+		_forEach(arrData,function(v,k){
+			if(v.min < objAgg.min){ objAgg.min = v.min; }
+			if(v.max > objAgg.max){ objAgg.max = v.max; }
+			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
+			if(v.ls > objAgg.ls){ objAgg.max = v.ls; }
+			objAgg.total += v.total;
+			objAgg.count += v.count;
+		});
+		objAgg.avg = objAgg.total/objAgg.count;
 		return objAgg;
 	}
+	aggStats.uniq = function(arrData){
+		var objAgg = _defaults({},objDefaults.uniq);
+		var intCount=0;
+		_forEach(arrData,function(v,k){
+			//get top level stats
+			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
+			if(v.ls > objAgg.ls){ objAgg.max = v.ls; }
+			objAgg.total += v.total;
+			_for(v.values,function(vv,kk){
+				if(objAgg.values.hasOwnproperty(kk)){ objAgg.values[kk] += vv; }
+				else{ objAgg.values[kk] = vv; intCount++; }
+			});
+			objAgg.count = intCount;
+		});
+		return objAgg;
+	}
+	aggStats.compete = aggStats.uniq;
+	aggStats.co_occurence = aggStats.uniq;
 };
 module.exports = SuddenStats;
