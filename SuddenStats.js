@@ -25,7 +25,7 @@ stat types:
   compete=uniq+numeric (also with substring search support)
   co-occurence=2 coinciding values count (also with substring search support)
 
-TODO: move vars to private-ish like default configs
+TODO:
 compete
 stat windows
 window history
@@ -184,7 +184,7 @@ var SuddenStats = function(objConfig){
 
 	updateStats.uniq = function(arrData, objStat){
 		//console.log(arrData,key);
-		var intTotal=1, intCount=1,
+		var intTotal=0, intCount=0,
 			v;
 		while(v=arrData.pop()){
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
@@ -197,14 +197,16 @@ var SuddenStats = function(objConfig){
 	}
 
 	updateStats.compete = function(arrData, objStat){
-		var intCount = 1,
+		var intCount = 0, intTotal=0,
 			v;
 		while(v=arrData.pop()){
-			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
-			else{objStat.values[v]=self.objCompeteDefaults;}
-			intCount = ((intCount | 1) + 1) | 1;
+			//console.log(v[0],v[1]);
+			if(objStat.values.hasOwnProperty(v[0])){ objStat.values[v[0]]+=v[1]; }
+			else{objStat.values[v[0]]=v[1]; intCount++;}
+			intTotal += v[1];
 		}
 		objStat.count += intCount;
+		objStat.total += intTotal;
 		//TODO: add the numeric stats for score
 		return objStat;
 	}

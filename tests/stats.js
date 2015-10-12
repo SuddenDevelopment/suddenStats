@@ -103,7 +103,7 @@ describe('count all exact occurences of a value given a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    console.log(objStats.stats.source);
+    console.log(objStats.stats.user);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();
  });
