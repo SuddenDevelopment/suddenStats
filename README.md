@@ -14,6 +14,8 @@ the throttle time and buffer size are auto adjusting, but can be given values
 
 ##QuickStart:
 
+npm install suddenstats
+
 Simple mode addData, nothing fancy, pass in arrays of numbers and access stats
 ```
 var objStats = new SuddenStats();

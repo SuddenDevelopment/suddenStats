@@ -30,6 +30,7 @@ compete
 stat windows
 window history
 conditional config based on properties in passed in object, if it has this property, use this path etc.
+https://github.com/petkaantonov/deque
 
 */
 var utils = require('./utils.js');
