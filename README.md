@@ -14,7 +14,9 @@ the throttle time and buffer size are auto adjusting, but can be given values
 
 ##QuickStart:
 
-npm install suddenstats
+for node: npm install suddenstats
+or
+browser: bower install suddenstats
 
 Simple mode addData, nothing fancy, pass in arrays of numbers and access stats
 ```
