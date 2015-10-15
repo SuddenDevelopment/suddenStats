@@ -38,12 +38,14 @@ if (typeof window == 'undefined'){var utils = require('./utils.js');}
 var _ = new utils;
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
-	this.config = {limit:1000,throttle:1000,stats:{primary:{type:'numeric'}}};
+	this.config = {limit:1000,throttle:1000,batch:'or',stats:{primary:{type:'numeric'}}};
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
 	this.simple = false;
 	this.stats = {};
 	this.batch = [];
+	this.ts = Date.now();
 	this.intBatch = 0;
+	this.inProcess=false;
 	//this.processing = false;
 	var objDefaults={},updateStats = {},aggStats={};
 	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
@@ -91,7 +93,6 @@ var SuddenStats = function(objConfig){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
 		//config.limit is to start kciking things out of the batch after too many per batch / time period
-		
 			if(Array.isArray(varData)){  
 				//combine batches or arrays into the throttle timeline
 				var v;
@@ -102,18 +103,28 @@ var SuddenStats = function(objConfig){
 				self.intBatch=self.intBatch+1;
 				self.batch.push(varData);
 			}
-			/* 
-			if(fnInprocess){ 
-				if(self.config.limit > 2){self.config.limit--;} 
-				self.config.throttle++;
-			}
-			*/
-		if(self.intBatch>=self.config.limit){ this.addData(self.batch); }
-		//this.runQ(self.batch);
+		//batch by number or time
+		var ts=Date.now();
+		if(self.config.batch==='or' && self.intBatch>=self.config.limit || ts >= self.ts+self.config.throttle){ runQ(self.batch); }
+		if(self.config.batch==='and' && self.intBatch>=self.config.limit && ts >= self.ts+self.config.throttle){ runQ(self.batch); }
 	};
+
+	var runQ = function(arrData){
+		//just a little helper to qData
+		var ts=Date.now();
+		self.addData(self.batch);
+		if(self.inProcess===true){
+			//adjust the throttling until runs dont bump into each other
+			self.config.limit++; self.config.throttle++;
+		}
+		//set the new timestamp
+		self.ts=ts;
+	}
 
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
+		//flag for if its updating or not, significant for adjusting throttle automatically
+		self.inProcess=true;
 		//always work with an array of data. Data is expected be in such vlume that it should be buffered into batches
 		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
@@ -153,6 +164,7 @@ var SuddenStats = function(objConfig){
 				arrBatch[strStat] = {};
 			});
 		}
+		self.inProcess=false;
 	};
 
 	var updateWindows = function(arrData, objStat){
