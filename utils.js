@@ -39,4 +39,4 @@ var utils = function(){
     }
     //----====|| END UTILITY FUNCTIONS ||====----\\
 }
-module.exports = utils;
+if (typeof module !== 'undefined' && module.exports){module.exports = utils;}

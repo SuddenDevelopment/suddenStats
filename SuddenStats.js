@@ -33,7 +33,8 @@ conditional config based on properties in passed in object, if it has this prope
 https://github.com/petkaantonov/deque
 
 */
-var utils = require('./utils.js');
+//only do the require thing in node, browser needs to include files individually
+if (typeof window == 'undefined'){var utils = require('./utils.js');}
 var _ = new utils;
 var SuddenStats = function(objConfig){
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
@@ -279,4 +280,5 @@ var SuddenStats = function(objConfig){
 	aggStats.compete = aggStats.uniq;
 	aggStats.co_occurence = aggStats.uniq;
 };
-module.exports = SuddenStats;
+if (typeof module !== 'undefined' && module.exports){module.exports = SuddenStats;}
+
