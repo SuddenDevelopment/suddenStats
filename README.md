@@ -18,6 +18,18 @@ for node: npm install suddenstats
 or
 browser: bower install suddenstats
 
+##node include
+```
+var SuddenStats   = require("../SuddenStats");
+```
+
+##browser include
+```
+<script src="bower_components/suddenstats/utils.js"></script>
+<script src="bower_components/suddenstats/SuddenStats.js"></script>
+```
+
+
 Simple mode addData, nothing fancy, pass in arrays of numbers and access stats
 ```
 var objStats = new SuddenStats();
