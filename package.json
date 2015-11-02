@@ -7,13 +7,13 @@
     "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
   "dependencies": {},
-  "main": "suddenStats.js",
+  "main": "suddenstats.js",
   "devDependencies": {
     "mocha": "^2.1.0",
     "should": "^4.4.2"
   },
   "scripts": {
-    "start": "node suddenStats.js",
+    "start": "node suddenstats.js",
     "test": "mocha -R spec ./tests"
   },
   "repository": {
