@@ -1,8 +1,8 @@
 {
   "name": "suddenstats",
   "description": "Simple fast statistcs that stay updated on the fly. intended for high volume streaming data",
-  "homepage":"http://suddendevelopment.com",
-  "version": "1.0.2",
+  "homepage": "https://github.com/SuddenDevelopment/suddenStats",
+  "version": "1.0.3",
   "contributors": [
     "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node suddenStats.js",
-    "test": "mocha -R spec ./tests"  
+    "test": "mocha -R spec ./tests"
   },
   "repository": {
     "type": "git",
@@ -30,6 +30,5 @@
   "bugs": {
     "url": "https://github.com/SuddenDevelopment/suddenStats/issues"
   },
-  "homepage": "https://github.com/SuddenDevelopment/suddenStats",
   "readmeFilename": "README.md"
 }
