@@ -291,7 +291,29 @@ var SuddenStats = function(objConfig){
 	aggStats.compete = aggStats.uniq;
 	aggStats.co_occurence = aggStats.uniq;
 
+//----====|| FILTERS ||====----\\
+	this.strFilter = function(strNeedle,strPath,objStat,objOptions){ 
+		var intCount = 0;
+		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
+		if(objOptions && objOptions.reverse === true){  
+			//filter out objects that match
+			if(intCount===0){return objStat}else{return false;}
+		}else{
+			//filter out objects that dont match
+			if(intCount>0){return objStat}else{return false;}
+		}
+	}
+
+	this.matchFilter = function(strPath,varValue,objStat,objOptions){
+		
+		if(objOptions.reverse === true){}else{}
+		//filter out what does match
+		if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		//filter out what doesnt match
+		if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
+	}
 //----====|| STRINGS ||====----\\
+	
 	//a function that determines if a substring exists in a string FAST
 	//input: search string, large string like a paragraph. AKA needle and haystack
 	//return: number of instances of 
