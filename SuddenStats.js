@@ -295,25 +295,24 @@ var SuddenStats = function(objConfig){
 	this.strFilter = function(strNeedle,strPath,objStat,objOptions){ 
 		var intCount = 0;
 		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
-		if(typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
+		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
 			//filter out objects that match
 			if(intCount===0){return objStat}else{return false;}
 		}else{
 			//filter out objects that dont match
 			if(intCount>0){return objStat}else{return false;}
 		}
-	}
+	};
 
 	this.matchFilter = function(strPath,varValue,objStat,objOptions){
-		
-		if(typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){
+		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
 			if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}else{
 		//filter out what doesnt match
 			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
-	}
+	};
 //----====|| STRINGS ||====----\\
 	
 	//a function that determines if a substring exists in a string FAST
@@ -321,7 +320,7 @@ var SuddenStats = function(objConfig){
 	//return: number of instances of 
 	//case insensitive, truncate incoming string to something reasonable, like 10k characters
 	this.strCount = function(strNeedle,strHaystack,objOptions){
-		if(typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 
+		if(objOptions && typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 
 			strNeedle = strNeedle.toLowerCase(); strHaystack = strHaystack.toLowerCase; 
 		}
 		var arrMatch = strHaystack.split(strNeedle);
