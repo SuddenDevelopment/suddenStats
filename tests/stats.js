@@ -1,6 +1,6 @@
 var assert        = require("assert");
 var should        = require("should");
-var SuddenStats   = require("../SuddenStats");
+var SuddenStats   = require("../suddenstats");
 
 describe('get a basic stat', function () {
  it('should return max=6', function (done) {

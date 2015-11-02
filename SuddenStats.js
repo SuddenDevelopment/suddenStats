@@ -295,7 +295,7 @@ var SuddenStats = function(objConfig){
 	this.strFilter = function(strNeedle,strPath,objStat,objOptions){ 
 		var intCount = 0;
 		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
-		if(objOptions && objOptions.reverse === true){  
+		if(typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
 			//filter out objects that match
 			if(intCount===0){return objStat}else{return false;}
 		}else{
@@ -306,11 +306,13 @@ var SuddenStats = function(objConfig){
 
 	this.matchFilter = function(strPath,varValue,objStat,objOptions){
 		
-		if(objOptions.reverse === true){}else{}
-		//filter out what does match
-		if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		if(typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){
+			//filter out what does match
+			if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}else{
 		//filter out what doesnt match
-		if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
+			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}
 	}
 //----====|| STRINGS ||====----\\
 	
@@ -319,7 +321,9 @@ var SuddenStats = function(objConfig){
 	//return: number of instances of 
 	//case insensitive, truncate incoming string to something reasonable, like 10k characters
 	this.strCount = function(strNeedle,strHaystack,objOptions){
-		if(objOptions && objOptions.preserveCase === false){ strNeedle = strNeedle.toLowerCase(); strHaystack = strHaystack.toLowerCase; }
+		if(typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 
+			strNeedle = strNeedle.toLowerCase(); strHaystack = strHaystack.toLowerCase; 
+		}
 		var arrMatch = strHaystack.split(strNeedle);
 		return arrMatch.length-1;
 	};
