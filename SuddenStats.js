@@ -208,6 +208,7 @@ var SuddenStats = function(objConfig){
 			//console.log(objStat.path,v);
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
 			else{objStat.values[v]=1; intCount++; }
+			if(objStat.values[v] > objStat.max){objStat.max = objStat.values[v];}
 			intTotal = ((intTotal | 1) + 1) | 1;
 		}
 		objStat.total += intTotal;
@@ -223,6 +224,7 @@ var SuddenStats = function(objConfig){
 			//console.log(v[0],v[1]);
 			if(objStat.values.hasOwnProperty(v[0])){ objStat.values[v[0]]+=v[1]; }
 			else{objStat.values[v[0]]=v[1]; intCount++;}
+			if(objStat.values[v[0]] > objStat.max){objStat.max = objStat.values[v[0]];}
 			intTotal += v[1];
 		}
 		objStat.count += intCount;
