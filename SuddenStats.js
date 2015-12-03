@@ -47,10 +47,10 @@ var SuddenStats = function(objConfig){
 	this.inProcess=false;
 	//this.processing = false;
 	var objDefaults={},updateStats = {},aggStats={};
-	 objDefaults.numeric = {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'};
-	 objDefaults.uniq = {limit:100,count:0,fs:Date.now(),ls:Date.now(),min:0,max:0,total:0,avg:0,values:{}};
-	 objDefaults.compete = {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};;
-	 objDefaults.co_occurence = {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}};
+	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
+	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),min:0,max:0,total:0,avg:0,values:{}}; }
+	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
+	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}}; }
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
@@ -66,11 +66,11 @@ var SuddenStats = function(objConfig){
 			//console.log(objV,k);
 			//set defaults for stat
 			//add any user overrides to things like type
-			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]);
+			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]());
 			//init the windows
 			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
 				self.stats[k].windows={ts_minute:false};
-				self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]);
+				self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]());
 				self.stats[k].windows.minute=[];
 				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
 					self.stats[k].windows.ts_hour=false;
@@ -128,6 +128,7 @@ var SuddenStats = function(objConfig){
 		if(arrData.length===0 && self.batch.length>0){arrData=self.batch;}
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
+		//skip all the extra stuff if it's just numeric.
 		if(self.simple===true){ self.stats.primary = updateStats['numeric'](arrData,self.stats.primary); }
 		else{
 			var arrBatch={};
@@ -139,6 +140,7 @@ var SuddenStats = function(objConfig){
 			_.forEach(arrData,function(objData,k){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
 				_.forOwn(self.config.stats,function(objStat,strStat){
+					//console.log(strStat,objStat.type);
 					var varValue =false;
 					switch(objStat.type){
 						case 'numeric': varValue = _.get(objData,objStat.path); break;
@@ -151,16 +153,20 @@ var SuddenStats = function(objConfig){
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\
+			//console.log(arrBatch);
 			_.forOwn(arrBatch,function(objStat,strStat){
 				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
-				self.stats[strStat]=updateStats[self.config.stats[strStat].type](objStat.data,self.stats[strStat]);
+				//it ended up being cleaner and faster to have the unfctions in a config array than to have them in a case statement
+				//set the existing stat using the config.stat_type function with the given stat from the batch and the key for the stat updating as params
+				self.stats[strStat]=updateStats[self.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//----====|| STATS WINDOWS ||====----\\
 				//is a window defined for the stat?
 				if(self.stats[strStat].hasOwnProperty('level')){
-					self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]); 
+					self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]);
+					//console.log('windows updated');
 				}
 				//console.log(arrBatch);
-				arrBatch[strStat] = {};
+				delete arrBatch[strStat];
 			});
 		}
 		self.inProcess=false;
@@ -196,22 +202,22 @@ var SuddenStats = function(objConfig){
 	}
 
 	updateStats.uniq = function(arrData, objStat){
-		//console.log(arrData,key);
-		var intTotal=0, intCount=0,
-			v;
+		//console.log("||",arrData,objStat,"||");
+		var intTotal=0, intCount=0, v;
 		while(v=arrData.pop()){
+			//console.log(objStat.path,v);
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
 			else{objStat.values[v]=1; intCount++; }
 			intTotal = ((intTotal | 1) + 1) | 1;
 		}
 		objStat.total += intTotal;
 		objStat.count = intCount;
+		//console.log("||",arrData,objStat,"||");
 		return objStat;
 	}
 
 	updateStats.compete = function(arrData, objStat){
-		var intCount = 0, intTotal=0,
-			v;
+		var intCount = 0, intTotal=0, v;
 		while(v=arrData.pop()){
 			//console.log(v[0],v[1]);
 			if(objStat.values.hasOwnProperty(v[0])){ objStat.values[v[0]]+=v[1]; }
@@ -273,8 +279,8 @@ var SuddenStats = function(objConfig){
 		return objAgg;
 	}
 	aggStats.uniq = function(arrData){
-		var objAgg = _.defaults({},objDefaults.uniq);
-		var intCount=0;
+		var objAgg = _.defaults({},objDefaults.uniq)
+		,intCount=0;
 		_.forEach(arrData,function(v,k){
 			//get top level stats
 			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
