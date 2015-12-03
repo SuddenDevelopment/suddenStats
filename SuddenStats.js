@@ -211,7 +211,7 @@ var SuddenStats = function(objConfig){
 			intTotal = ((intTotal | 1) + 1) | 1;
 		}
 		objStat.total += intTotal;
-		objStat.count = intCount;
+		objStat.count += intCount;
 		//console.log("||",arrData,objStat,"||");
 		return objStat;
 	}
