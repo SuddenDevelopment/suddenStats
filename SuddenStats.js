@@ -162,8 +162,9 @@ var SuddenStats = function(objConfig){
 				//----====|| STATS WINDOWS ||====----\\
 				//is a window defined for the stat?
 				if(self.stats[strStat].hasOwnProperty('level')){
-					self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]);
-					//console.log('windows updated');
+					//self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]);
+					updateWindows(objStat.data,self.stats[strStat]);
+					//console.log(objStat.data);
 				}
 				//console.log(arrBatch);
 				delete arrBatch[strStat];
@@ -175,8 +176,8 @@ var SuddenStats = function(objConfig){
 	var updateWindows = function(arrData, objStat){
 		//console.log(arrData,objStat);
 		//does a new bucket need to be created?
-		var intNow=Date.now();
-		if(objStat.windows.current.fs < intNow/60000 ){
+		//var intNow=Date.now(); //shouldnt be needed, can use ls
+		if(objStat.windows.current.fs < objStat.ls/60000 ){
 			//take current bucket, snapshot it to history
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
@@ -197,6 +198,7 @@ var SuddenStats = function(objConfig){
 			}			
 		}
 		//process current
+		console.log('update current with this data: ',arrData);
 		objStat.windows.current = updateStats[objStat.type](arrData,objStat.windows.current);
 		return objStat;
 	}
@@ -204,7 +206,7 @@ var SuddenStats = function(objConfig){
 	updateStats.uniq = function(arrData, objStat){
 		//console.log("||",arrData,objStat,"||");
 		var intTotal=0, intCount=0, v;
-		while(v=arrData.pop()){
+		_.for(arrData,function(v,k){
 			//update values
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
 			else{objStat.values[v]=1; intCount++; }
@@ -214,7 +216,7 @@ var SuddenStats = function(objConfig){
 			intTotal = ((intTotal | 1) + 1) | 1;
 			//update avg
 			objStat.avg=objStat.total/objStat.count;
-		}
+		});
 		objStat.total += intTotal;
 		objStat.count += intCount;
 		objStat.ls = Date.now();
@@ -224,13 +226,13 @@ var SuddenStats = function(objConfig){
 
 	updateStats.compete = function(arrData, objStat){
 		var intCount = 0, intTotal=0, v;
-		while(v=arrData.pop()){
+		_.for(arrData,function(v,k){
 			//console.log(v[0],v[1]);
 			if(objStat.values.hasOwnProperty(v[0])){ objStat.values[v[0]]+=v[1]; }
 			else{objStat.values[v[0]]=v[1]; intCount++;}
 			if(objStat.values[v[0]] > objStat.max){objStat.max = objStat.values[v[0]];}
 			intTotal += v[1];
-		}
+		});
 		objStat.count += intCount;
 		objStat.total += intTotal;
 		objStat.avg=objStat.total/objStat.count;

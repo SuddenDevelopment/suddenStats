@@ -56,7 +56,7 @@ describe('performance test', function () {
     var intEnd= Date.now();
 	var intDuration= intCount/((intEnd-intStart)/1000);
     //check
-     console.log(intDuration,':per second');
+     //console.log(intDuration,':per second');
    (intDuration).should.be.above(50000);
    done();
  });
@@ -88,7 +88,7 @@ describe('count all exact occurences of a value given a json path', function () 
          source:{type:"uniq",path:"source"}
         ,user:{type:"compete",path:"user",score:"score"}
         ,user_source:{type:"co_occurence",path:"user",path2:"source"}
-        ,users:{type:"uniq",path:"user"}
+        ,users:{type:"uniq",path:"user",level:"minute"}
         ,score:{type:"numeric",path:"score"}
       }
     });
@@ -104,7 +104,7 @@ describe('count all exact occurences of a value given a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    console.log(objStats.stats);
+    console.log(objStats.stats.users.windows.current);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    done();
  });
