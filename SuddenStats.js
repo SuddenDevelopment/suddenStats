@@ -212,6 +212,7 @@ var SuddenStats = function(objConfig){
 		}
 		objStat.total += intTotal;
 		objStat.count += intCount;
+		objStat.ls = ls:Date.now();
 		//console.log("||",arrData,objStat,"||");
 		return objStat;
 	}
@@ -226,6 +227,7 @@ var SuddenStats = function(objConfig){
 		}
 		objStat.count += intCount;
 		objStat.total += intTotal;
+		objStat.ls = ls:Date.now();
 		//TODO: add the numeric stats for score
 		return objStat;
 	}
