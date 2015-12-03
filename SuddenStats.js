@@ -177,7 +177,7 @@ var SuddenStats = function(objConfig){
 		//console.log(arrData,objStat);
 		//does a new bucket need to be created?
 		//var intNow=Date.now(); //shouldnt be needed, can use ls
-		if(objStat.windows.current.fs < objStat.ls/60000 ){
+		if(objStat.windows.current.fs < objStat.ls-60000 ){
 			//take current bucket, snapshot it to history
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
@@ -358,4 +358,3 @@ var SuddenStats = function(objConfig){
 	//output: number score for the string
 };
 if (typeof module !== 'undefined' && module.exports){module.exports = SuddenStats;}
-
