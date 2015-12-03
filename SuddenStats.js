@@ -48,7 +48,7 @@ var SuddenStats = function(objConfig){
 	//this.processing = false;
 	var objDefaults={},updateStats = {},aggStats={};
 	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
-	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),min:0,max:0,total:0,avg:0,values:{}}; }
+	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
 	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
 	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}}; }
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
@@ -205,11 +205,15 @@ var SuddenStats = function(objConfig){
 		//console.log("||",arrData,objStat,"||");
 		var intTotal=0, intCount=0, v;
 		while(v=arrData.pop()){
-			//console.log(objStat.path,v);
+			//update values
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
 			else{objStat.values[v]=1; intCount++; }
+			//update max
 			if(objStat.values[v] > objStat.max){objStat.max = objStat.values[v];}
+			//add to total
 			intTotal = ((intTotal | 1) + 1) | 1;
+			//update avg
+			objStat.avg=objStat.total/objStat.count;
 		}
 		objStat.total += intTotal;
 		objStat.count += intCount;
@@ -229,6 +233,7 @@ var SuddenStats = function(objConfig){
 		}
 		objStat.count += intCount;
 		objStat.total += intTotal;
+		objStat.avg=objStat.total/objStat.count;
 		objStat.ls = Date.now();
 		//TODO: add the numeric stats for score
 		return objStat;
