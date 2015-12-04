@@ -89,7 +89,7 @@ describe('count all exact occurences of a value given a json path', function () 
         ,user:{type:"compete",path:"user",score:"score"}
         ,user_source:{type:"co_occurence",path:"user",path2:"source"}
         ,users:{type:"uniq",path:"user",level:"minute"}
-        ,score:{type:"numeric",path:"score"}
+        ,score:{type:"numeric",path:"score",filter:{path:"source",op:"eq",val:"twitter"}}
       }
     });
     objStats.addData(

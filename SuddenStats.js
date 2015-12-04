@@ -36,6 +36,7 @@ https://github.com/petkaantonov/deque
 if (typeof window == 'undefined'){var utils = require('./utils.js');}
 var _ = new utils;
 var SuddenStats = function(objConfig){
+	//----====|| CONFIG ||====----\\
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
 	this.config = {limit:1000,throttle:1000,batch:'or',stats:{primary:{type:'numeric'}}};
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
@@ -54,6 +55,7 @@ var SuddenStats = function(objConfig){
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
+	//----====|| INIT STATS OBJECTS ||====----\\
 	var init = function(objConfig){
 		//TODO: validate the structure of config passed in
 		//simple mode is only for when there are just arrays of numbers sent, if it's objects cant use simple mode
@@ -86,6 +88,7 @@ var SuddenStats = function(objConfig){
 
 	init(objConfig);
 
+	//----====|| THE DEFAULT FUNCTION TO PUT DATA IN ||====----\\
 	this.qData = function(varData){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
@@ -138,16 +141,24 @@ var SuddenStats = function(objConfig){
 			_.forEach(arrData,function(objData,k){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
 				_.forOwn(self.config.stats,function(objStat,strStat){
-					//console.log(strStat,objStat.type);
-					var varValue =false;
-					switch(objStat.type){
-						case 'numeric': varValue = _.get(objData,objStat.path); break;
-						case 'uniq': varValue = _.get(objData,objStat.path); break;
-						case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
-						case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
+					//----====|| FILTER ||====----\\
+					if(objStat.hasOwnProperty('filter')){
+						//see if the inverse filter is to be used filter out instead of filter by. filter by is default
+						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
+						//pass to a filter function by op with path and val params
+						objStat=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objStat,{"reverse":fReverse});
 					}
-					//get the numbers from the object based on the path
-					if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
+					if(objStat!==false){
+						var varValue =false;
+						switch(objStat.type){
+							case 'numeric': varValue = _.get(objData,objStat.path); break;
+							case 'uniq': varValue = _.get(objData,objStat.path); break;
+							case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
+							case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
+						}
+						//get the numbers from the object based on the path
+						if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
+					}
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\
@@ -307,7 +318,8 @@ var SuddenStats = function(objConfig){
 	aggStats.co_occurence = aggStats.uniq;
 
 //----====|| FILTERS ||====----\\
-	this.strFilter = function(strNeedle,strPath,objStat,objOptions){ 
+	this.filter={};
+	this.filter.in = function(strNeedle,strPath,objStat,objOptions){ 
 		var intCount = 0;
 		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
 		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
@@ -319,13 +331,33 @@ var SuddenStats = function(objConfig){
 		}
 	};
 
-	this.matchFilter = function(strPath,varValue,objStat,objOptions){
+	this.filter.eq = function(strPath,varValue,objStat,objOptions){
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
 			if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}else{
 		//filter out what doesnt match
 			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}
+	};
+	//greater than
+	this.filter.gt =function(strPath,varValue,objStat,objOptions){
+		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
+			//filter out what does match
+			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}else{
+		//filter out what doesnt match
+			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}
+	};
+	//less than
+	this.filter.lt =function(strPath,varValue,objStat,objOptions){
+		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
+			//filter out what does match
+			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
+		}else{
+		//filter out what doesnt match
+			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
 //----====|| STRINGS ||====----\\
