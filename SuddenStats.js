@@ -157,7 +157,10 @@ var SuddenStats = function(objConfig){
 							case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
 						}
 						//get the numbers from the object based on the path
-						if(varValue !== false){ arrBatch[strStat].data.push( varValue ); }else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
+						if(varValue !== false){ 
+							if(varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
+							else{ arrBatch[strStat].data.push( varValue ); }
+						}else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 					}
 				});
 			});
@@ -253,7 +256,7 @@ var SuddenStats = function(objConfig){
 	updateStats.co_occurence = updateStats.uniq;
 
 	updateStats.numeric = function(arrData, objStat){
-		if (!(arrData instanceof Array)) { arrData = [arrData]; }
+		if (!(arrData.constructor === Array)) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		//console.log(this.stats);
 		var intCount = 0,
@@ -321,6 +324,7 @@ var SuddenStats = function(objConfig){
 	this.filter={};
 	this.filter.in = function(strNeedle,strPath,objStat,objOptions){ 
 		var intCount = 0;
+		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
 		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
 		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
 			//filter out objects that match
@@ -332,6 +336,7 @@ var SuddenStats = function(objConfig){
 	};
 
 	this.filter.eq = function(strPath,varValue,objStat,objOptions){
+		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
 			if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
@@ -342,6 +347,7 @@ var SuddenStats = function(objConfig){
 	};
 	//greater than
 	this.filter.gt =function(strPath,varValue,objStat,objOptions){
+		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
 			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
@@ -352,6 +358,7 @@ var SuddenStats = function(objConfig){
 	};
 	//less than
 	this.filter.lt =function(strPath,varValue,objStat,objOptions){
+		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
 			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
