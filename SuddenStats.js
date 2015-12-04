@@ -325,7 +325,7 @@ var SuddenStats = function(objConfig){
 
 //----====|| FILTERS ||====----\\
 	this.filter={};
-	this.filter.in = function(strNeedle,strPath,objStat,objOptions){ 
+	this.filter.in = function(strPath,strNeedle,objStat,objOptions){ 
 		var intCount = 0;
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
 		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
