@@ -181,7 +181,7 @@ var SuddenStats = function(objConfig){
 			//take current bucket, snapshot it to history
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
-			objStat.windows.current = _.defaults({},objDefaults[objStat.type]);
+			objStat.windows.current = _.defaults({},objDefaults[objStat.type]());
 			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < intNow-360000){
 				//loop through minutes and drop off anything older than an hour
 				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000)
@@ -198,7 +198,7 @@ var SuddenStats = function(objConfig){
 			}			
 		}
 		//process current
-		console.log('update current with this data: ',arrData);
+		//console.log('update current with this data: ',arrData);
 		objStat.windows.current = updateStats[objStat.type](arrData,objStat.windows.current);
 		return objStat;
 	}
