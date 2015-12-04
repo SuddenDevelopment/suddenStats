@@ -47,10 +47,10 @@ var SuddenStats = function(objConfig){
 	this.inProcess=false;
 	//this.processing = false;
 	var objDefaults={},updateStats = {},aggStats={};
-	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
-	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
-	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
-	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}}; }
+	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
+	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,avg:0,values:{}}; }
+	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
+	 objDefaults.co_occurence = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}}; }
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
@@ -67,17 +67,16 @@ var SuddenStats = function(objConfig){
 			//set defaults for stat
 			//add any user overrides to things like type
 			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]());
+			self.stats[k]['total']=0;
 			//init the windows
 			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
-				self.stats[k].windows={ts_minute:false};
+				self.stats[k].windows={};
 				self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]());
 				self.stats[k].windows.minute=[];
 				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
-					self.stats[k].windows.ts_hour=false;
 					self.stats[k].windows.hour=[]; 
 				}
 				if(self.config.stats[k].level=='day'){
-					self.stats[k].windows.ts_day=false;
 					self.stats[k].windows.day=[]; 
 				}
 			}
@@ -182,6 +181,7 @@ var SuddenStats = function(objConfig){
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
 			objStat.windows.current = _.defaults({},objDefaults[objStat.type]());
+			objStat.windows.current.total=0;
 			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < intNow-360000){
 				//loop through minutes and drop off anything older than an hour
 				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000)
@@ -213,7 +213,7 @@ var SuddenStats = function(objConfig){
 			//update max
 			if(objStat.values[v] > objStat.max){objStat.max = objStat.values[v];}
 			//add to total
-			intTotal = ((intTotal | 1) + 1) | 1;
+			intTotal++;
 			//update avg
 			objStat.avg=objStat.total/objStat.count;
 		});
