@@ -142,15 +142,16 @@ var SuddenStats = function(objConfig){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
 				_.forOwn(self.config.stats,function(objStat,strStat){
 					//----====|| FILTER ||====----\\
+					var fKeep=true;
 					if(objStat.hasOwnProperty('filter')){
 						//see if the inverse filter is to be used filter out instead of filter by. filter by is default
 						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
 						//pass to a filter function by op with path and val params
 						//console.log(objStat.filter.op,objStat.filter.path,objStat.filter.val,objStat);
-						objData=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
+						fKeep=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
 						//console.log(objStat);
 					}
-					if(objData!==false){
+					if(fKeep!==false){
 						var varValue =false;
 						switch(objStat.type){
 							case 'numeric': varValue = _.get(objData,objStat.path); break;
