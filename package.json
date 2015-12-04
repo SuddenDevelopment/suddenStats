@@ -2,7 +2,7 @@
   "name": "suddenstats",
   "description": "Simple fast statistcs that stay updated on the fly. intended for high volume streaming data",
   "homepage": "https://github.com/SuddenDevelopment/suddenStats",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "contributors": [
     "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
