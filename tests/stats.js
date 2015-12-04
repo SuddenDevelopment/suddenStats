@@ -8,7 +8,7 @@ describe('get a basic stat', function () {
     var objStats = new SuddenStats();
     objStats.addData([1,2,3,4,5,6]); 
     //check
-    console.log(objStats);
+    //console.log(objStats);
    (objStats.stats.primary.max).should.be.exactly(6);
    done();
  });
@@ -89,8 +89,8 @@ describe('count all exact occurences of a value given a json path', function () 
         ,user:{type:"compete",path:"user",score:"score"}
         ,user_source:{type:"co_occurence",path:"user",path2:"source"}
         ,users:{type:"uniq",path:"user",level:"minute"}
-        ,score:{type:"numeric",path:"score",filter:{path:"source",op:"eq",val:"twitter"}}
-        ,score:{type:"numeric",path:"score",filter:{path:"score",op:"gt",path2:"avg"}}
+        ,twitterScores:{type:"numeric",path:"score",filter:{path:"source",op:"eq",val:"twitter"}}
+        ,aboveAvg:{type:"numeric",path:"score",filter:{path:"score",op:"gt",path2:"avg"}}
       }
     });
     objStats.addData(
@@ -105,8 +105,9 @@ describe('count all exact occurences of a value given a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    console.log(objStats.stats.users.windows.current);
+    //console.log(objStats.stats.users.windows.current);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
+   (objStats.stats.twitterScores.total).should.be.exactly(64);
    done();
  });
 });

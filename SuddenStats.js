@@ -146,7 +146,9 @@ var SuddenStats = function(objConfig){
 						//see if the inverse filter is to be used filter out instead of filter by. filter by is default
 						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
 						//pass to a filter function by op with path and val params
-						objStat=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objStat,{"reverse":fReverse});
+						//console.log(objStat.filter.op,objStat.filter.path,objStat.filter.val,objStat);
+						objData=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
+						//console.log(objStat);
 					}
 					if(objStat!==false){
 						var varValue =false;
@@ -158,7 +160,7 @@ var SuddenStats = function(objConfig){
 						}
 						//get the numbers from the object based on the path
 						if(varValue !== false){ 
-							if(varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
+							if(varValue && varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
 							else{ arrBatch[strStat].data.push( varValue ); }
 						}else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
 					}
@@ -336,12 +338,14 @@ var SuddenStats = function(objConfig){
 	};
 
 	this.filter.eq = function(strPath,varValue,objStat,objOptions){
+		//console.log(strPath,varValue,objStat,objOptions);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
-			if(varValue !== _.get(objStat,strPath)){ return objStat; }else{ return false; }
+			if(varValue !== _.get(objStat,strPath)){ console.log(objStat); return objStat; }else{ return false; }
 		}else{
 		//filter out what doesnt match
+			//console.log('val:',varValue,'path:',strPath,'stat:',objStat,'result:',_.get(objStat,strPath));
 			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
