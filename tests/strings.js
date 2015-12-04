@@ -44,7 +44,7 @@ describe('filter in by match', function () {
     //test
     var objStats = new SuddenStats();
     var objOut = {id:'me',content:'[[WP:OP|open proxy]]'};
-    var objMatches = objStats.filter.eq('content','[[WP:OP|open proxy]]',objOut);
+    var objMatches = objStats.filter.in('content','open proxy',objOut);
     //check
     //console.log(objStats);
    (objMatches.id).should.be.exactly('me');

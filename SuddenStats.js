@@ -326,9 +326,11 @@ var SuddenStats = function(objConfig){
 //----====|| FILTERS ||====----\\
 	this.filter={};
 	this.filter.in = function(strPath,strNeedle,objStat,objOptions){ 
-		var intCount = 0;
+		var intCount = 0; var v=_.get(objStat,strPath);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
-		intCount = self.strCount(strNeedle,_.get(objStat,strPath));
+		if(v.constructor === Array){v=v.join()}
+		intCount = self.strCount(strNeedle,v);
+		//console.log(self.strCount(strNeedle,_.get(objStat,strPath)));
 		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
 			//filter out objects that match
 			if(intCount===0){return objStat}else{return false;}
