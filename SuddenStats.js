@@ -150,7 +150,7 @@ var SuddenStats = function(objConfig){
 						objData=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
 						//console.log(objStat);
 					}
-					if(objStat!==false){
+					if(objData!==false){
 						var varValue =false;
 						switch(objStat.type){
 							case 'numeric': varValue = _.get(objData,objStat.path); break;
