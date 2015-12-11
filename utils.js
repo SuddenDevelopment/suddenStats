@@ -37,6 +37,21 @@ var utils = function(){
     	});
     	return arrFresh;
     }
+    //----====|| STRINGS ||====----\\
+    self.strCount = function(strNeedle,strHaystack,objOptions){
+        if(objOptions && typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 
+            strNeedle = strNeedle.toLowerCase(); strHaystack = strHaystack.toLowerCase; 
+        }
+        var arrMatch = strHaystack.split(strNeedle);
+        return arrMatch.length-1;
+    };
+    self.strCounts = function(arrNeedles,strHaystack,objOptions){
+        var objResults = {};
+        _.for(arrNeedles,function(v,k){
+            objResults[v] = self.strCount(v,strHaystack,objOptions);
+        });
+        return objResults;
+    }
     //----====|| END UTILITY FUNCTIONS ||====----\\
 }
 if (typeof module !== 'undefined' && module.exports){module.exports = utils;}

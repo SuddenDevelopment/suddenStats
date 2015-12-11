@@ -145,7 +145,7 @@ var SuddenStats = function(objConfig){
 						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
 						//pass to a filter function by op with path and val params
 						//console.log(objStat.filter.op,objStat.filter.path,objStat.filter.val,objStat);
-						fKeep=self.filter[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
+						fKeep=objFilters[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
 						//console.log(objStat);
 					}
 					if(fKeep!==false){
@@ -321,13 +321,12 @@ var SuddenStats = function(objConfig){
 	aggStats.co_occurence = aggStats.uniq;
 
 //----====|| FILTERS ||====----\\
-	this.filter={};
-	this.filter.in = function(strPath,strNeedle,objStat,objOptions){ 
+	var objFilters={};
+	objFilters.in = function(strPath,strNeedle,objStat,objOptions){ 
 		var intCount = 0; var v=_.get(objStat,strPath);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
 		if(v.constructor === Array){v=v.join()}
-		intCount = self.strCount(strNeedle,v);
-		//console.log(self.strCount(strNeedle,_.get(objStat,strPath)));
+		intCount = _.strCount(strNeedle,v);
 		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
 			//filter out objects that match
 			if(intCount===0){return objStat}else{return false;}
@@ -337,7 +336,7 @@ var SuddenStats = function(objConfig){
 		}
 	};
 
-	this.filter.eq = function(strPath,varValue,objStat,objOptions){
+	objFilters.eq = function(strPath,varValue,objStat,objOptions){
 		//console.log(strPath,varValue,objStat,objOptions);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
@@ -350,7 +349,7 @@ var SuddenStats = function(objConfig){
 		}
 	};
 	//greater than
-	this.filter.gt =function(strPath,varValue,objStat,objOptions){
+	objFilters.gt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
@@ -361,7 +360,7 @@ var SuddenStats = function(objConfig){
 		}
 	};
 	//less than
-	this.filter.lt =function(strPath,varValue,objStat,objOptions){
+	objFilters.lt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
@@ -371,31 +370,5 @@ var SuddenStats = function(objConfig){
 			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
-//----====|| STRINGS ||====----\\
-	
-	//a function that determines if a substring exists in a string FAST
-	//input: search string, large string like a paragraph. AKA needle and haystack
-	//return: number of instances of 
-	//case insensitive, truncate incoming string to something reasonable, like 10k characters
-	this.strCount = function(strNeedle,strHaystack,objOptions){
-		if(objOptions && typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 
-			strNeedle = strNeedle.toLowerCase(); strHaystack = strHaystack.toLowerCase; 
-		}
-		var arrMatch = strHaystack.split(strNeedle);
-		return arrMatch.length-1;
-	};
-	//a function that will take an array of search terms, and return the ones that existed with counts 
-	//input: array of search terms, large string to search in / haystack
-	//return: array of terms that exist with counts;
-	this.strCounts = function(arrNeedles,strHaystack,objOptions){
-		var objResults = {};
-		_.for(arrNeedles,function(v,k){
-			objResults[v] = self.strCount(v,strHaystack,objOptions);
-		});
-		return objResults;
-	}
-	//a function that can take arrays of terms with numbers (positive and negative) find matches and return a total score for the larger string
-	//input: array of terms with numbers, large string
-	//output: number score for the string
 };
 if (typeof module !== 'undefined' && module.exports){module.exports = SuddenStats;}
