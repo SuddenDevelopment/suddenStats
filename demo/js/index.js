@@ -5,8 +5,8 @@ var app = angular.module('CardUI', ['ngPrettyJson']);
 
 var objStats = new SuddenStats({
 		stats:{ 
-			ips:{type:"uniq",path:"user",filter:{path:"user",op:"in",val:"."}}
-			,type:{type:"uniq",path:"type",level:'minute'}
+			ips:{type:"uniq",path:"user",limit:100,keep:"newHigh",filter:{path:"user",op:"in",val:"."}}
+			,type:{type:"uniq",path:"type",limit:100,level:'minute'}
 			,server:{type:"uniq",path:"server_name"}
 		}
 	});

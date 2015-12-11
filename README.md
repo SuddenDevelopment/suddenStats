@@ -10,6 +10,7 @@ can use these stats to make very fast decisions in app logic, or display constan
 ## Features
 - fast generic numeric statstics
 - get stats on unique values, and unique combinations, and unique values + numeric stats
+- stats trim functions to keep what's most relevant
 - batching, with auto throttling
 - rolling time windows
 - auto aggregation of time windows

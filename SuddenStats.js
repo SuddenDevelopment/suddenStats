@@ -1,30 +1,6 @@
 'use strict';
-// add stat, wipe stats, update stat
-// stats windows
-// limits on windows, limits on stats 
-
-//Why? because stats like .min and .max need to be run over an entire array each time, these stay up to date. normally it's cheap to just dump into an array and run min and max etc when you need them, but in some cases min and max are neded to determine what to do often.
 
 /* 
-everything is optional!
-objConfig={  
-	 limit: 1000
-	,stats:
-		{
-			 key:{
-				 path:'path of key within an object'
-				,type:'numeric, uniq, freq, co-occurence'
-				,values:{starting values
-			 }
-		}
-}
-
-stat types:
-  numeric=min,max,avg, etc.
-  uniq=value,count (also with substring search support)
-  compete=uniq+numeric (also with substring search support)
-  co-occurence=2 coinciding values count (also with substring search support)
-
 TODO:
 	https://github.com/petkaantonov/deque
 	multiple filters per stat
@@ -45,7 +21,7 @@ var SuddenStats = function(objConfig){
 	this.intBatch = 0;
 	this.inProcess=false;
 	//this.processing = false;
-	var objDefaults={},updateStats = {},aggStats={};
+	var objDefaults={},updateStats={},aggStats={},trimStats={},objFilters={};
 	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
 	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
 	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
@@ -63,7 +39,7 @@ var SuddenStats = function(objConfig){
 		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
 		_.forOwn(self.config.stats,function(objStat,k){
-			//console.log(objV,k);
+			//console.log('stats loop: ',objV,k);
 			//set defaults for stat
 			//add any user overrides to things like type
 			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]());
@@ -86,7 +62,7 @@ var SuddenStats = function(objConfig){
 
 	init(objConfig);
 
-	//----====|| THE DEFAULT FUNCTION TO PUT DATA IN ||====----\\
+//----====|| Public Functions ||====----\\
 	this.qData = function(varData){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
@@ -106,18 +82,6 @@ var SuddenStats = function(objConfig){
 		if(self.config.batch==='or' && self.intBatch>=self.config.limit || ts >= self.ts+self.config.throttle){ runQ(self.batch); }
 		if(self.config.batch==='and' && self.intBatch>=self.config.limit && ts >= self.ts+self.config.throttle){ runQ(self.batch); }
 	};
-
-	var runQ = function(arrData){
-		//just a little helper to qData
-		var ts=Date.now();
-		self.addData(self.batch);
-		if(self.inProcess===true){
-			//adjust the throttling until runs dont bump into each other
-			self.config.limit++; self.config.throttle++;
-		}
-		//set the new timestamp
-		self.ts=ts;
-	}
 
 	this.addData = function(arrData){
 		//EXAMPLE: objStat.addData([1,2,3,4]);
@@ -166,25 +130,46 @@ var SuddenStats = function(objConfig){
 				});
 			});
 			//----====|| PROCESS STATS BATCHES ||====----\\
-			//console.log(arrBatch);
 			_.forOwn(arrBatch,function(objStat,strStat){
-				//console.log(strStat,objStat,self.stats[strStat].type,self.config.stats[strStat].type);
+				//console.log('process batch loop',objStat,strStat);
 				//it ended up being cleaner and faster to have the unfctions in a config array than to have them in a case statement
 				//set the existing stat using the config.stat_type function with the given stat from the batch and the key for the stat updating as params
 				self.stats[strStat]=updateStats[self.stats[strStat].type](objStat.data,self.stats[strStat]);
 				//----====|| STATS WINDOWS ||====----\\
-				//is a window defined for the stat?
-				if(self.stats[strStat].hasOwnProperty('level')){
-					//self.stats[strStat]=updateWindows(objStat.data,self.stats[strStat]);
-					updateWindows(objStat.data,self.stats[strStat]);
-					//console.log(objStat.data);
+				if(self.stats[strStat].hasOwnProperty('level')){ 
+					updateWindows(objStat.data,self.stats[strStat]); 
 				}
-				//console.log(arrBatch);
+				//----====|| STATS TRIM ||====----\\
+				var fTrim=false;
+				if(self.stats[strStat].hasOwnProperty('limit') && self.stats[strStat].count > self.stats[strStat].limit){ 
+					if(self.stats[strStat].hasOwnProperty('level') && Object.keys(self.stats[strStat].windows.current.values).length > self.stats[strStat].limit){ fTrim=true; }
+					else if(Object.keys(self.stats[strStat].values).length > self.stats[strStat].limit){ fTrim=true; }
+				} 
+				if(fTrim===true){ trimStat(self.stats[strStat]); }	
+				//reset
 				delete arrBatch[strStat];
 			});
 		}
 		self.inProcess=false;
 	};
+//----====|| Internal Functions ||====----\\
+	var runQ = function(arrData){
+		//just a little helper to qData
+		var ts=Date.now();
+		self.addData(self.batch);
+		if(self.inProcess===true){
+			//adjust the throttling until runs dont bump into each other
+			self.config.limit++; self.config.throttle++;
+		}
+		//set the new timestamp
+		self.ts=ts;
+	}
+
+	var trimStat = function(objStat){
+		var strKeep="newest";
+		if(objStat.hasOwnProperty('keep') && trimStats.hasOwnProperty(strKeep)){ strKeep=objStat.keep; }
+		return trimStats[strKeep](objStat);
+	}
 
 	var updateWindows = function(arrData, objStat){
 		//console.log(arrData,objStat);
@@ -211,13 +196,51 @@ var SuddenStats = function(objConfig){
 			}			
 		}
 		//process current
-		//console.log('update current with this data: ',arrData);
 		objStat.windows.current = updateStats[objStat.type](arrData,objStat.windows.current);
 		return objStat;
 	}
 
+//----====|| Trims ||====----\\
+	trimStats.newest = function(objStat){
+		//console.log('trim new:');
+		//TODO: remove code repitition
+		if(objStat.hasOwnProperty('windows')){
+			var length = Object.keys(objStat.windows.current.values).length;
+			while (length-- > objStat.limit){ delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[0]]; }
+		}else{
+			var length = Object.keys(objStat.values).length;
+			while (length-- > objStat.limit){ delete objStat.values[Object.keys(objStat.values)[0]]; }
+		}
+		return objStat;
+	}
+	trimStats.newHigh = function(objStat){
+		//console.log('trim new:');
+		//TODO: remove code repitition
+		if(objStat.hasOwnProperty('windows')){
+			var length = Object.keys(objStat.windows.current.values).length;
+			var i=0;
+			while (length > objStat.limit){ 
+				if(objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]] <= objStat.avg){
+					delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
+				}
+				i++; length--;
+			}
+		}else{
+			var length = Object.keys(objStat.values).length;
+			var i=0;
+			while (length > objStat.limit){ 
+				if(objStat.values[Object.keys(objStat.values)[i]] <= objStat.avg){
+					delete objStat.values[Object.keys(objStat.values)[i]]; 
+				}
+				i++; length--;
+			}
+		}
+		return objStat;
+	}
+
+//----====|| Stats ||====----\\
 	updateStats.uniq = function(arrData, objStat){
-		//console.log("||",arrData,objStat,"||");
+		//console.log('uniq: ',arrData,objStat);
 		var intTotal=0, intCount=0, v;
 		_.for(arrData,function(v,k){
 			//update values
@@ -233,14 +256,12 @@ var SuddenStats = function(objConfig){
 		objStat.total += intTotal;
 		objStat.count += intCount;
 		objStat.ls = Date.now();
-		//console.log("||",arrData,objStat,"||");
 		return objStat;
 	}
 
 	updateStats.compete = function(arrData, objStat){
 		var intCount = 0, intTotal=0, v;
 		_.for(arrData,function(v,k){
-			//console.log(v[0],v[1]);
 			if(objStat.values.hasOwnProperty(v[0])){ objStat.values[v[0]]+=v[1]; }
 			else{objStat.values[v[0]]=v[1]; intCount++;}
 			if(objStat.values[v[0]] > objStat.max){objStat.max = objStat.values[v[0]];}
@@ -259,7 +280,6 @@ var SuddenStats = function(objConfig){
 	updateStats.numeric = function(arrData, objStat){
 		if (!(arrData.constructor === Array)) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
-		//console.log(this.stats);
 		var intCount = 0,
 			intMin=arrData[0],
 			intMax=0,
@@ -288,7 +308,8 @@ var SuddenStats = function(objConfig){
 		objStat.lastAvg = intAvg;
 		return objStat;
 	};
-	
+
+//----====|| Aggregates ||====----\\
 	aggStats.numeric = function(arrData){
 		var objAgg = _.defaults({},objDefaults.numeric);
 		_.forEach(arrData,function(v,k){
@@ -322,7 +343,6 @@ var SuddenStats = function(objConfig){
 	aggStats.co_occurence = aggStats.uniq;
 
 //----====|| FILTERS ||====----\\
-	var objFilters={};
 	objFilters.in = function(strPath,strNeedle,objStat,objOptions){ 
 		var intCount = 0; var v=_.get(objStat,strPath);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
