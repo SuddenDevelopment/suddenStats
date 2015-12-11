@@ -7,10 +7,14 @@ a statsistics library will typically require a separate lop through an array of 
 
 can use these stats to make very fast decisions in app logic, or display constantly changing values.
 
-data can be fed to qData function as often as needed. it will buffer for specified batch time frames, and limit the batch in that timeframe to a defined limit.
-
-the throttle time and buffer size are auto adjusting, but can be given values
-
+## Features
+- fast generic numeric statstics
+- get stats on unique values, and unique combinations, and unique values + numeric stats
+- batching, with auto throttling
+- rolling time windows
+- auto aggregation of time windows
+- in line filters, get stats for subsets
+- works in node and browser
 
 ##QuickStart:
 
@@ -32,16 +36,24 @@ var SuddenStats = require('suddenstats');
 ```
 
 ##API
-
+- qData(dataObject) : put the data in a small buffer to be batched for efficiency
+- addData(dataObject) : apply data immediately
 
 ##Configuring Stats
 
 ###Statistics Types
 - numeric: pure numerical stats
-- uniq: unique value counts
-- compete: unique value + numerical stats
-- co-occurence: 2 value combination counts
+- uniq: unique value counts, gives each unique value and count
+- compete: unique value + numeric stats, will give you each unique value + numeric statistics (not just counts)
+- co-occurence: 2 value combination counts, same as unique but works for unique combinations. value1_value2
 
-###Windows
-- seconds: interval to keep stats within as snapshots
-- window count: how many windows to keep in history
+###Windows: defined by "level" param
+- minute, keep up to 60 minute windows
+- hour, keep 60 minute windows, automatically aggregate them into hourly windows
+- day, 60 minute windows, 24 hourly windows, daily windows.
+
+###Filters:
+- eq: exact matches
+- in: substring or item in array match
+- gt: greater than
+- lt: less than
