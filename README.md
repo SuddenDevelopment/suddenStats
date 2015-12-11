@@ -18,9 +18,16 @@ can use these stats to make very fast decisions in app logic, or display constan
 
 ##QuickStart:
 
-for node: npm install suddenstats --save
+for node: 
+```
+npm install suddenstats --save
+```
 or
-browser: bower install suddenstats --save
+
+browser: 
+```
+bower install suddenstats --save
+```
 
 look at the tests and the demo. The demo can run in a browser
 
