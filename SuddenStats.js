@@ -26,11 +26,8 @@ stat types:
   co-occurence=2 coinciding values count (also with substring search support)
 
 TODO:
-compete
-window history
-conditional config based on properties in passed in object, if it has this property, use this path etc.
-https://github.com/petkaantonov/deque
-
+	https://github.com/petkaantonov/deque
+	multiple filters per stat
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('./utils.js');}

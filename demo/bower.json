@@ -1,0 +1,25 @@
+{
+  "name": "fui",
+  "version": "0.3.0",
+  "homepage": "https://github.com/AnthongRedbeard/FUI",
+  "authors": [
+    "Wes Widner <kai5263499@gmail.com>",
+    "Anthony Aragues <anthony.aragues@gmail.com>",
+    "Andrew Forth <aforth1227@gmail.com>"
+  ],
+  "main": "index.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angularjs": "~1.4.8",
+    "socket.io-client": "~0.9.16",
+    "moment": "~2.10.6",
+    "ng-prettyjson": "~0.1.9"
+  }
+}

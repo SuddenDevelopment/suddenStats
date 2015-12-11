@@ -1,0 +1,86 @@
+/*  http://chriskempson.github.io/base16/ tomorrow */
+  	  
+      .b00-bg { background-color: #1d1f21; }
+      .b01-bg { background-color: #282a2e; }
+      .b02-bg { background-color: #373b41; }
+      .b03-bg { background-color: #969896; }
+      .b04-bg { background-color: #b4b7b4; }
+      .b05-bg { background-color: #c5c8c6; }
+      .b06-bg { background-color: #e0e0e0; }
+      .b07-bg { background-color: #ffffff; }
+      .b08-bg { background-color: #cc6666; }
+      .b09-bg { background-color: #de935f; }
+      .b0A-bg { background-color: #f0c674; }
+      .b0B-bg { background-color: #b5bd68; }
+      .b0C-bg { background-color: #8abeb7; }
+      .b0D-bg { background-color: #81a2be; }
+      .b0E-bg { background-color: #b294bb; }
+      .b0F-bg { background-color: #a3685a; }
+      
+      .b00 { color: #1d1f21; }
+      .b01 { color: #282a2e; }
+      .b02 { color: #373b41; }
+      .b03 { color: #969896; }
+      .b04 { color: #b4b7b4; }
+      .b05 { color: #c5c8c6; }
+      .b06 { color: #e0e0e0; }
+      .b07 { color: #ffffff; }
+      .b08 { color: #cc6666; }
+      .b09 { color: #de935f; }
+      .b0A { color: #f0c674; }
+      .b0B { color: #b5bd68; }
+      .b0C { color: #8abeb7; }
+      .b0D { color: #81a2be; }
+      .b0E { color: #b294bb; }
+      .b0F { color: #a3685a; }
+
+
+/* Layout */
+html, body { height: 100%; padding: 0; margin: 0; color:#ddd; background:#1d1f21; font-family: Futura, 'Trebuchet MS', Arial, sans-serif; }
+div.Container-NW,div.Container-NE,div.Container-SW,div.Container-SE{width:50%;height:50%;float:left;position:static;overflow:hidden;}
+div.Container-NW{ vertical-align: bottom;  }
+div.Container-NE{ vertical-align: bottom;  }
+div.Container-SW{  }
+div.Container-SE{  }
+div.Container-Column{ height:100%; width:33%; }
+div.Container-NW div.Container-Column{ float:right; vertical-align: bottom; position:relative;}
+div.Container-NE div.Container-Column{ float:left; vertical-align: bottom; position:relative;}
+div.Container-SW div.Container-Column{ float:right; }
+div.Container-SE div.Container-Column{ float:left; }
+div.Shim-Vertical{ position: absolute; bottom:0px; width:100%;}
+
+/* Controls */
+div.Control-NW,div.Control-NE,div.Control-SW,div.Control-SE{ position:absolute; width:200px; height:200px; border:1px solid rgba(255,255,255,0.25); z-index: 100; background-color:rgba(127,127,127,0.5);}
+div.Control-NW{ left:0;top:0; border-bottom-right-radius: 200px;}
+div.Control-NE{ right:0;top:0; border-bottom-left-radius: 10px;}
+div.Control-SW{ left:0;bottom:0; border-top-right-radius: 10px;}
+div.Control-SE{ right:0;bottom:0; border-top-left-radius: 10px;}
+
+/* Cards RGB WO YPT*/
+div.Card{ padding:3px; margin:2px; border-radius: 2px; font-size:10px; }
+div.Card div.account{ float:right; }
+.Info, .Theme-White{border:3px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.75); background-color:rgba(127,127,127,0.3);}
+.Alert, .Theme-Red{border:3px solid rgba(255,127,127,0.25); color: rgba(255,127,127,0.75); background-color:rgba(127,0,0,0.3);}
+.Success, .Theme-Green{border:3px solid rgba(127,255,127,0.25); color: rgba(127,255,127,0.75); background-color:rgba(0,127,0,0.3);}
+.Warning, .Theme-Orange{border:3px solid rgba(255,255,127,0.25); color: rgba(255,255,127,0.75); background-color:rgba(127,127,0,0.3);}
+.Theme-Blue{border:3px solid rgba(127,127,255,0.25); color: rgba(127,127,255,0.75); background-color:rgba(0,0,127,0.3);}
+.Theme-Purple{border:3px solid rgba(255,127,255,0.25); color: rgba(255,127,255,0.75); background-color:rgba(127,0,127,0.3);}
+.Theme-Teal{border:3px solid rgba(127,255,255,0.25); color: rgba(127,255,255,0.75); background-color:rgba(0,127,127,0.3);}
+
+.Card.Info .title{ border-bottom:1px solid rgba(255,255,255,0.25);}
+.Card.State-Icon{float:left; height:32px; width:32px; overflow:hidden;}
+
+
+
+div.Card{ border-top:0; border-right:0; border-bottom:0; }
+
+
+pre.pretty-json{ outline:1px solid #373b41; overflow-x:hidden;}
+pre.pretty-json span.key{ color: #cc6666; }
+pre.pretty-json span.string{ color: #b5bd68; }
+pre.pretty-json span.number{ color: #de935f; }
+pre.pretty-json span.sep{ color: #969896; }
+
+
+div#leftPanel{ width:50%; float:left;}
+div#rightPanel{ width:50%; float:left;}
