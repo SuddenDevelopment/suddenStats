@@ -1,12 +1,12 @@
 /* use strict */
 /*jshint laxcomma: true */
-
+var strSource='stream.wikimedia.org/rc';
 var app = angular.module('CardUI', ['ngPrettyJson']);
-
+var socket={};
 var objStats = new SuddenStats({
 		stats:{ 
-			ips:{type:"uniq",path:"user",limit:100,keep:"newHigh",filter:{path:"user",op:"in",val:"."}}
-			,type:{type:"uniq",path:"type",limit:100,level:'minute'}
+			ips:{type:"uniq",path:"user",limit:50,padding:20,filter:{path:"user",op:"in",val:"."}}
+			,type:{type:"uniq",path:"type",keep:"newHigh",limit:50,level:'hour'}
 			,server:{type:"uniq",path:"server_name"}
 		}
 	});
@@ -18,13 +18,25 @@ app.controller('FUI',function($scope){
 	$scope.arrData=[]; 
 	$scope.stats=objStats.stats;
 
-	//connect to wikipedia
-	var socket = io.connect('stream.wikimedia.org/rc');
+	$scope.play=false;
+	
+	
 
-	socket.on('connect', function() { socket.emit('subscribe', '*'); });
+	$scope.togglePlay=function(){
+		if($scope.play===true){ socket.socket.disconnect(); }
+		else{ socket.socket.reconnect(); }
+	} 
 
-	//add subscriptions to channels, handle the events
-	 socket.on('change', function(objData) { addEvent(objData); });
+	var fnPlay = function(strSource){
+		socket = io.connect(strSource);
+		socket.on('disconnect', function() { $scope.play=false; });
+		socket.on('connect', function() { 
+			socket.emit('subscribe', '*'); 
+			$scope.play=true;
+		});
+		//add subscriptions to channels, handle the events
+		socket.on('change', function(objData) { addEvent(objData); });
+	}	
 
 	var addEvent = function(objData){
 		$scope.arrData.push(objData);
@@ -36,4 +48,5 @@ app.controller('FUI',function($scope){
 		/* TODO: debounce the apply */
 		$scope.$evalAsync();
 	}
+	fnPlay(strSource);
 });

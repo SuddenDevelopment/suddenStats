@@ -17,7 +17,7 @@ can use these stats to make very fast decisions in app logic, or display constan
 - in line filters, get stats for subsets
 - works in node and browser
 
-##QuickStart:
+## QuickStart:
 
 for node: 
 ```
@@ -32,36 +32,52 @@ bower install suddenstats --save
 
 look at the tests and the demo. The demo can run in a browser
 
-##node include
+## node include
 ```
 var SuddenStats = require('suddenstats');
 ```
 
-##browser include
+## browser include
 ```
 <script src="bower_components/suddenstats/utils.js"></script>
 <script src="bower_components/suddenstats/SuddenStats.js"></script>
 ```
 
-##API
+## Example use from demo
+```
+var objStats = new SuddenStats({
+    stats:{ 
+      ips:{type:"uniq",path:"user",limit:50,padding:20,filter:{path:"user",op:"in",val:"."}}
+      ,type:{type:"uniq",path:"type",keep:"newHigh",limit:50,level:'hour'}
+      ,server:{type:"uniq",path:"server_name"}
+    }
+  });
+```
+
+## API
 - qData(dataObject) : put the data in a small buffer to be batched for efficiency
 - addData(dataObject) : apply data immediately
 
-##Configuring Stats
+## Configuring Stats
 
-###Statistics Types
+### Statistics Types
 - numeric: pure numerical stats
 - uniq: unique value counts, gives each unique value and count
 - compete: unique value + numeric stats, will give you each unique value + numeric statistics (not just counts)
 - co-occurence: 2 value combination counts, same as unique but works for unique combinations. value1_value2
 
-###Windows: defined by "level" param
+### Windows: defined by "level" param
 - minute, keep up to 60 minute windows
 - hour, keep 60 minute windows, automatically aggregate them into hourly windows
 - day, 60 minute windows, 24 hourly windows, daily windows.
 
-###Filters:
+### Filters:
 - eq: exact matches
 - in: substring or item in array match
 - gt: greater than
 - lt: less than
+
+### Options
+- limit: max number of values to trim to
+- padding: How many items over limit before starting a trim, less frquent trims may be faster
+- keep: method for decising which to keep (newest),"newHigh"

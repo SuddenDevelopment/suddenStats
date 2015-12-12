@@ -141,9 +141,11 @@ var SuddenStats = function(objConfig){
 				}
 				//----====|| STATS TRIM ||====----\\
 				var fTrim=false;
-				if(self.stats[strStat].hasOwnProperty('limit') && self.stats[strStat].count > self.stats[strStat].limit){ 
-					if(self.stats[strStat].hasOwnProperty('level') && Object.keys(self.stats[strStat].windows.current.values).length > self.stats[strStat].limit){ fTrim=true; }
-					else if(Object.keys(self.stats[strStat].values).length > self.stats[strStat].limit){ fTrim=true; }
+				var intLimit = self.stats[strStat].limit;
+				if(self.stats[strStat].hasOwnProperty('padding')){ intLimit +=self.stats[strStat].padding; }
+				if(self.stats[strStat].hasOwnProperty('limit') && self.stats[strStat].count > intLimit){ 
+					if(self.stats[strStat].hasOwnProperty('level') && Object.keys(self.stats[strStat].windows.current.values).length > intLimit){ fTrim=true; }
+					else if(Object.keys(self.stats[strStat].values).length > intLimit){ fTrim=true; }
 				} 
 				if(fTrim===true){ trimStat(self.stats[strStat]); }	
 				//reset
@@ -180,19 +182,19 @@ var SuddenStats = function(objConfig){
 			objStat.windows.minute.push(objStat.windows.current);
 			//re-init current bucket
 			objStat.windows.current = _.defaults({},objDefaults[objStat.type]());
-			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < intNow-360000){
+			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < objStat.ls-360000){
 				//loop through minutes and drop off anything older than an hour
 				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000)
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.hour.push( aggStats[objStat.type](objStat.windows.minute) );
-				objStat.windows.ts_hour = intNow;
+				objStat.windows.ts_hour = objStat.ls;
 			}
-			if(objStat.windows.hasOwnProperty('day') && objStat.windows.ts_hour < intNow-86400000){
+			if(objStat.windows.hasOwnProperty('day') && objStat.windows.ts_hour < objStat.ls-86400000){
 				//loop through minutes and drop off anything older than an hour
 				objStat.windows.hour = _.filterOld(objStat.windows.hour, 'fs', 86400000)
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.day.push( aggStats[objStat.type](objStat.windows.hour) );
-				objStat.windows.ts_day = intNow;
+				objStat.windows.ts_day = objStat.ls;
 			}			
 		}
 		//process current
@@ -206,22 +208,23 @@ var SuddenStats = function(objConfig){
 		//TODO: remove code repitition
 		if(objStat.hasOwnProperty('windows')){
 			var length = Object.keys(objStat.windows.current.values).length;
-			while (length-- > objStat.limit){ delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[0]]; }
+			while (length-- > objStat.limit){ objStat.windows.current.values[Object.keys(objStat.windows.current.values)[0]]=undefined; }
 		}else{
 			var length = Object.keys(objStat.values).length;
-			while (length-- > objStat.limit){ delete objStat.values[Object.keys(objStat.values)[0]]; }
+			while (length-- > objStat.limit){ objStat.values[Object.keys(objStat.values)[0]]=undefined; }
 		}
 		return objStat;
 	}
 	trimStats.newHigh = function(objStat){
 		//console.log('trim new:');
 		//TODO: remove code repitition
+		//TODO: use the position as a factor in deciding to remove even if it's above average
 		if(objStat.hasOwnProperty('windows')){
 			var length = Object.keys(objStat.windows.current.values).length;
 			var i=0;
 			while (length > objStat.limit){ 
 				if(objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]] <= objStat.avg){
-					delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
+					objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]=undefined; 
 				}
 				i++; length--;
 			}
@@ -230,7 +233,7 @@ var SuddenStats = function(objConfig){
 			var i=0;
 			while (length > objStat.limit){ 
 				if(objStat.values[Object.keys(objStat.values)[i]] <= objStat.avg){
-					delete objStat.values[Object.keys(objStat.values)[i]]; 
+					objStat.values[Object.keys(objStat.values)[i]]=undefined; 
 				}
 				i++; length--;
 			}
