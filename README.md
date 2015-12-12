@@ -1,4 +1,7 @@
 # suddenStats
+
+demo: <a href="http://suddendevelopment.com/suddenstats/demo/"> here </a>
+
 minimal config common statistics
 
 intended for high volume streaming data
