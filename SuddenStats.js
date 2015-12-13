@@ -108,12 +108,23 @@ var SuddenStats = function(objConfig){
 					if(objStat.hasOwnProperty('filter')){
 						//see if the inverse filter is to be used filter out instead of filter by. filter by is default
 						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
-						//pass to a filter function by op with path and val params
-						//console.log(objStat.filter.op,objStat.filter.path,objStat.filter.val,objStat);
-						fKeep=objFilters[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
-						//console.log(objStat);
+						if(objStat.filter.constructor === Array){
+							_.for(objStat.filter,function(v,k){
+								//pass to a filter function by op with path and val params
+								if(fKeep===true){
+									fKeep=objFilters[objStat.filter[k].op](objStat.filter[k].path,objStat.filter[k].val,objData,{"reverse":fReverse});
+								}
+							});	 
+						}
+						else{ 
+							//pass to a filter function by op with path and val params
+							fKeep=objFilters[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
+						}
+						
+						
 					}
 					if(fKeep!==false){
+						//----====|| UPDATE STAT ||====----\\
 						var varValue =false;
 						switch(objStat.type){
 							case 'numeric': varValue = _.get(objData,objStat.path); break;
@@ -359,7 +370,6 @@ var SuddenStats = function(objConfig){
 			if(intCount>0){return objStat}else{return false;}
 		}
 	};
-
 	objFilters.eq = function(strPath,varValue,objStat,objOptions){
 		//console.log(strPath,varValue,objStat,objOptions);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
@@ -372,14 +382,18 @@ var SuddenStats = function(objConfig){
 			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
+	objFilters.ni = function(strPath,varValue,objStat,objOptions){ 
+		objOptions.reverse=true;
+		objFilters.in(strPath,varValue,objStat,objOptions); 
+	}
+	objFilters.ne = function(strPath,varValue,objStat,objOptions){ 
+		objOptions.reverse=true;
+		objFilters.eq(strPath,varValue,objStat,objOptions); 
+	}
 	//greater than
 	objFilters.gt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
-			//filter out what does match
-			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
-		}else{
-		//filter out what doesnt match
 			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
@@ -387,10 +401,6 @@ var SuddenStats = function(objConfig){
 	objFilters.lt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
-			//filter out what does match
-			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
-		}else{
-		//filter out what doesnt match
 			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
