@@ -50,9 +50,12 @@ var SuddenStats = require('suddenstats');
 ```
 var objStats = new SuddenStats({
     stats:{ 
-      ips:{type:"uniq",path:"user",limit:50,padding:20,filter:{path:"user",op:"in",val:"."}}
-      ,type:{type:"uniq",path:"type",keep:"newHigh",limit:50,level:'hour'}
-      ,server:{type:"uniq",path:"server_name"}
+      ips:{type:"uniq",path:"user",limit:10,padding:5,filter:[{path:"server_name",op:"ne",val:"en.wikipedia.org"},{path:"user",op:"in",val:"."}]}
+      ,type:{type:"uniq",path:"type",level:'hour'}
+      ,server:{type:"uniq",path:"server_name",keep:"newHigh",limit:20}
+      ,size:{type:"numeric",path:"length.new"}
+      ,size:{type:"numeric",path:"length.new"}
+      ,bot:{type:"uniq",path:"bot"}
     }
   });
 ```

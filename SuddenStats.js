@@ -158,7 +158,7 @@ var SuddenStats = function(objConfig){
 				} 
 				if(fTrim===true){ trimStat(self.stats[strStat]); }	
 				//reset
-				delete arrBatch[strStat];
+				arrBatch[strStat]=undefined;
 			});
 		}
 		self.inProcess=false;
@@ -216,33 +216,37 @@ var SuddenStats = function(objConfig){
 		//console.log('trim new:');
 		//TODO: remove code repitition
 		if(objStat.hasOwnProperty('windows')){
-			var length = Object.keys(objStat.windows.current.values).length;
-			while (length-- > objStat.limit){ objStat.windows.current.values[Object.keys(objStat.windows.current.values)[0]]=undefined; }
+			var i=0,length = Object.keys(objStat.windows.current.values).length;
+			while (length-- > objStat.limit){ 
+				delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
+				i++;
+			}
 		}else{
-			var length = Object.keys(objStat.values).length;
-			while (length-- > objStat.limit){ objStat.values[Object.keys(objStat.values)[0]]=undefined; }
+			var i=0,length = Object.keys(objStat.values).length;
+			while (length-- > objStat.limit){ 
+				delete objStat.values[Object.keys(objStat.values)[i]]; 
+				i++;
+			}
 		}
 		return objStat;
 	}
 	trimStats.newHigh = function(objStat){
-		//console.log('trim new:');
-		//TODO: remove code repitition
+		//console.log('trim newHigh:');
+		//TODO: remove code repetition
 		//TODO: use the position as a factor in deciding to remove even if it's above average
 		if(objStat.hasOwnProperty('windows')){
-			var length = Object.keys(objStat.windows.current.values).length;
-			var i=0;
+			var i=0,length = Object.keys(objStat.windows.current.values).length;
 			while (length > objStat.limit){ 
 				if(objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]] <= objStat.avg){
-					objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]=undefined; 
+					delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
 				}
 				i++; length--;
 			}
 		}else{
-			var length = Object.keys(objStat.values).length;
-			var i=0;
+			var i=0,length = Object.keys(objStat.values).length;
 			while (length > objStat.limit){ 
 				if(objStat.values[Object.keys(objStat.values)[i]] <= objStat.avg){
-					objStat.values[Object.keys(objStat.values)[i]]=undefined; 
+					delete objStat.values[Object.keys(objStat.values)[i]];
 				}
 				i++; length--;
 			}
