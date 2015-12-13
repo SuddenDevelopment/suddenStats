@@ -5,7 +5,9 @@ var app = angular.module('CardUI', ['ngPrettyJson']);
 var socket={};
 var objStats = new SuddenStats({
 		stats:{ 
-			ips:{type:"uniq",path:"user",limit:10,padding:5,filter:[{path:"server_name",op:"ne",val:"en.wikipedia.org"},{path:"user",op:"in",val:"."}]}
+			ips:{type:"uniq",path:"user",limit:10,padding:5
+			,act:function(strStat,strValue){console.log(strStat,strValue);}
+			,filter:[{path:"server_name",op:"ne",val:"en.wikipedia.org"},{path:"user",op:"in",val:"."}]}
 			,type:{type:"uniq",path:"type",level:'hour'}
 			,server:{type:"uniq",path:"server_name",keep:"newHigh",limit:20}
 			,size:{type:"numeric",path:"length.new"}

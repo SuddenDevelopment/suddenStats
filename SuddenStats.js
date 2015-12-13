@@ -3,6 +3,10 @@
 /* 
 TODO:
 	https://github.com/petkaantonov/deque
+	do as much in init as possible, dont validate configs after that
+	add stat after init
+	remove stat after init
+	reset stat
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('./utils.js');}
@@ -134,6 +138,8 @@ var SuddenStats = function(objConfig){
 						if(varValue !== ''){
 							if(varValue && varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
 							else{ arrBatch[strStat].data.push( varValue ); }
+							//----====|| IMMEDIATE ACTIONS ||====----\\
+							if(objStat.hasOwnProperty('act')){ objStat.act(strStat,varValue); }
 						}
 					}
 				});
