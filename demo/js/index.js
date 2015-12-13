@@ -9,6 +9,8 @@ var objStats = new SuddenStats({
 			,type:{type:"uniq",path:"type",keep:"newHigh",limit:50,level:'hour'}
 			,server:{type:"uniq",path:"server_name"}
 			,size:{type:"numeric",path:"length.new"}
+			,size:{type:"numeric",path:"length.new"}
+			,bot:{type:"uniq",path:"bot"}
 		}
 	});
 

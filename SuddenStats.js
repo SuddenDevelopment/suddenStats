@@ -123,7 +123,7 @@ var SuddenStats = function(objConfig){
 					}
 					if(fKeep!==false){
 						//----====|| UPDATE STAT ||====----\\
-						var varValue =false;
+						var varValue='';
 						switch(objStat.type){
 							case 'numeric': varValue = _.get(objData,objStat.path); break;
 							case 'uniq': varValue = _.get(objData,objStat.path); break;
@@ -131,10 +131,10 @@ var SuddenStats = function(objConfig){
 							case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
 						}
 						//get the numbers from the object based on the path
-						if(varValue !== false){ 
+						if(varValue !== ''){
 							if(varValue && varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
 							else{ arrBatch[strStat].data.push( varValue ); }
-						}else{ console.log('value not found', strStat, objStat, objStat.path , objData); }
+						}
 					}
 				});
 			});
@@ -256,6 +256,7 @@ var SuddenStats = function(objConfig){
 		var intTotal=0, intCount=0, v;
 		_.for(arrData,function(v,k){
 			//update values
+			if(v===true){v='true';}else if(v===false){v='false';}
 			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
 			else{objStat.values[v]=1; intCount++; }
 			//update max
