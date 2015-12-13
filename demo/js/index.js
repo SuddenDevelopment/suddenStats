@@ -13,7 +13,7 @@ var objStats = new SuddenStats({
 			,bot:{type:"uniq",path:"bot"}
 		}
 	});
-
+var i=0;
 app.controller('FUI',function($scope){
 	$scope.config = {
 		itemLimit:20
@@ -42,6 +42,7 @@ app.controller('FUI',function($scope){
 	}	
 
 	var addEvent = function(objData){
+		objData.aid=i++;
 		$scope.arrData.push(objData);
 		objStats.qData(objData);
 		//if(objStats.stats.type.values.hasOwnProperty('edit'))console.log(objStats.stats);

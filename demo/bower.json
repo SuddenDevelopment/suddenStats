@@ -19,7 +19,6 @@
   "dependencies": {
     "angularjs": "~1.4.8",
     "socket.io-client": "~0.9.16",
-    "moment": "~2.10.6",
     "ng-prettyjson": "~0.1.9"
   }
 }

@@ -16,7 +16,7 @@
     </div>
 	<div id="rightPanel">
         <h3>Data Stream: <span ng-click="togglePlay()" class="link"> pause </span> </h3> 
-        <pre ng-repeat='(k,v) in arrData track by v.id | orderBy:k:true' pretty-json="v"/>
+        <pre ng-repeat='(k,v) in arrData track by v.aid | orderBy:k:true' pretty-json="v"/>
     </div>
 </body>
 </html>
