@@ -8,6 +8,7 @@ var objStats = new SuddenStats({
 			ips:{type:"uniq",path:"user",limit:50,padding:20,filter:[{path:"server_name",op:"ne",val:"en.wikipedia.org"},{path:"user",op:"in",val:"."}]}
 			,type:{type:"uniq",path:"type",keep:"newHigh",limit:50,level:'hour'}
 			,server:{type:"uniq",path:"server_name"}
+			,size:{type:"numeric",path:"length.new"}
 		}
 	});
 

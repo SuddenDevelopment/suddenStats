@@ -3,8 +3,6 @@
 /* 
 TODO:
 	https://github.com/petkaantonov/deque
-	multiple filters per stat
-	divide into multiple files and compile a dist for browsers
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('./utils.js');}
