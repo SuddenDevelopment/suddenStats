@@ -2,11 +2,7 @@
 
 /* 
 TODO:
-	https://github.com/petkaantonov/deque
 	do as much in init as possible, dont validate configs after that
-	add stat after init
-	remove stat after init
-	reset stat
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('./utils.js');}
@@ -38,31 +34,14 @@ var SuddenStats = function(objConfig){
 		if(objConfig && objConfig.stats){ self.config.stats={}; }
 		//merge defaults and config provided.
 		if(typeof objConfig==='object'){self.config = _.defaults(self.config,objConfig);}
-		//console.log(self.config);
 		//create all of the stats properties for what will be tracked
 		_.forOwn(self.config.stats,function(objStat,k){
 			//console.log('stats loop: ',objV,k);
-			//set defaults for stat
-			//add any user overrides to things like type
-			self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]());
-			//init the windows
-			if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
-				self.stats[k].windows={};
-				self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]());
-				self.stats[k].windows.minute=[];
-				if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
-					self.stats[k].windows.hour=[]; 
-				}
-				if(self.config.stats[k].level=='day'){
-					self.stats[k].windows.day=[]; 
-				}
-			}
+			initStat(k,objStat);
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
 	}
-
-	init(objConfig);
 
 //----====|| Public Functions ||====----\\
 	this.qData = function(varData){
@@ -169,7 +148,35 @@ var SuddenStats = function(objConfig){
 		}
 		self.inProcess=false;
 	};
+	this.addStat=function(strStat,objStat){
+		self.stats[strStat]=objStat;
+		initStat(strStat,objStat);
+	}
+	this.delStat=function(strStat){
+		delete self.stats[strStat];
+	}
+	this.rstStat=function(strStat){
+		initStat(strStat,self,stats[strStat]);
+	}
+
 //----====|| Internal Functions ||====----\\
+	var initStat = function(k,objStat){
+		//set defaults for stat
+		//add any user overrides to things like type
+		self.stats[k] = _.defaults(objStat,objDefaults[objStat.type]());
+		//init the windows
+		if(objStat.hasOwnProperty('level') && objDefaults.windows.hasOwnProperty(objStat.level)){ 
+			self.stats[k].windows={};
+			self.stats[k].windows.current = _.defaults({},objDefaults[objStat.type]());
+			self.stats[k].windows.minute=[];
+			if(self.config.stats[k].level=='hour' || self.config.stats[k].level=='day'){ 
+				self.stats[k].windows.hour=[]; 
+			}
+			if(self.config.stats[k].level=='day'){
+				self.stats[k].windows.day=[]; 
+			}
+		}
+	}
 	var runQ = function(arrData){
 		//just a little helper to qData
 		var ts=Date.now();
@@ -294,7 +301,6 @@ var SuddenStats = function(objConfig){
 		objStat.total += intTotal;
 		objStat.avg=objStat.total/objStat.count;
 		objStat.ls = Date.now();
-		//TODO: add the numeric stats for score
 		return objStat;
 	}
 
@@ -413,5 +419,8 @@ var SuddenStats = function(objConfig){
 			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
 		}
 	};
+
+	//run on instatiation
+	init(objConfig);
 };
 if (typeof module !== 'undefined' && module.exports){module.exports = SuddenStats;}
