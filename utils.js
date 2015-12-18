@@ -30,13 +30,26 @@ var utils = function(){
     	//console.log(objTarget,objDefaults);
     	return objTarget;
     };
+     //return an array of all keys full dpeth recursion
+     self.deepKeys = function(objData){
+        var arrKeys = [];
+        self.forOwn(objData,function(v,k){
+            if(typeof v ==='object'){ 
+                self.forEach(self.deepKeys(v),function(vv,kk){
+                    arrKeys.push(k+'.'+vv);
+                }); 
+            }
+            else{ arrKeys.push(k); }
+        });
+        return arrKeys;
+     };
      self.filterOld = function(arrData,strPath,intValue){
 		var arrFresh=[];
     	self.forEach(arrData,function(v,k){
     		if(self.get(v,strPath) > intValue){ arrFresh.push(v); }
     	});
     	return arrFresh;
-    }
+    };
     //----====|| STRINGS ||====----\\
     self.strCount = function(strNeedle,strHaystack,objOptions){
         if(objOptions && typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 

@@ -24,7 +24,7 @@ app.controller('FUI',function($scope){
 	$scope.stats=objStats.stats;
 
 	$scope.play=false;
-	
+	$scope.arrKeys=[];
 	
 
 	$scope.togglePlay=function(){
@@ -40,7 +40,10 @@ app.controller('FUI',function($scope){
 			$scope.play=true;
 		});
 		//add subscriptions to channels, handle the events
-		socket.on('change', function(objData) { addEvent(objData); });
+		socket.on('change', function(objData) { 
+			if($scope.arrKeys.length===0){ $scope.arrKeys= _.deepKeys(objData); }
+			addEvent(objData); 
+		});
 	}	
 
 	var addEvent = function(objData){
