@@ -2,7 +2,10 @@
 
 /* 
 TODO:
-	do as much in init as possible, dont validate configs after that
+	-do as much in init as possible, dont validate configs after that
+	-minute+hour co-occurence stats
+	-weekday+hour co-occurence stats ,not that great for "now" timestamps
+	-day of month occurence ,not that great for "now" timestamps
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('./utils.js');}
@@ -23,7 +26,7 @@ var SuddenStats = function(objConfig){
 	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
 	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
 	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
-	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,fs:Date.now(),ls:Date.now(),values:{}}; }
+	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,max:0,fs:Date.now(),ls:Date.now(),values:{}}; }
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
@@ -87,24 +90,16 @@ var SuddenStats = function(objConfig){
 					//----====|| FILTER ||====----\\
 					var fKeep=true;
 					if(objStat.hasOwnProperty('filter')){
-						//see if the inverse filter is to be used filter out instead of filter by. filter by is default
-						var fReverse=false; if(objStat.filter.hasOwnProperty('reverse') && objStat.filter.reverse===true){ fReverse=true; }
-						if(objStat.filter.constructor === Array){
-							_.for(objStat.filter,function(v,k){
-								//pass to a filter function by op with path and val params
-								if(fKeep===true){
-									fKeep=objFilters[objStat.filter[k].op](objStat.filter[k].path,objStat.filter[k].val,objData,{"reverse":fReverse});
-								}
-							});	 
-						}
-						else{ 
+						_.for(objStat.filter,function(v,k){
 							//pass to a filter function by op with path and val params
-							fKeep=objFilters[objStat.filter.op](objStat.filter.path,objStat.filter.val,objData,{"reverse":fReverse});
-						}
-						
-						
+							if(fKeep===true){
+								fKeep=objFilters[v.op](v.path,v.val,objData,v.and);
+							}else{
+								//console.log(fKeep);
+							}
+						});	 
 					}
-					if(fKeep!==false){
+					if(fKeep===true){
 						//----====|| UPDATE STAT ||====----\\
 						var varValue='';
 						switch(objStat.type){
@@ -118,7 +113,7 @@ var SuddenStats = function(objConfig){
 							if(varValue && varValue.constructor === Array){ _.forEach(varValue,function(v,k){ arrBatch[strStat].data.push(v); }); }
 							else{ arrBatch[strStat].data.push( varValue ); }
 							//----====|| IMMEDIATE ACTIONS ||====----\\
-							if(objStat.hasOwnProperty('act')){ objStat.act(strStat,varValue); }
+							if(objStat.hasOwnProperty('act')){ objStat.act(objData); }
 						}
 					}
 				});
@@ -128,31 +123,34 @@ var SuddenStats = function(objConfig){
 				//console.log('process batch loop',objStat,strStat);
 				//it ended up being cleaner and faster to have the unfctions in a config array than to have them in a case statement
 				//set the existing stat using the config.stat_type function with the given stat from the batch and the key for the stat updating as params
-				self.stats[strStat]=updateStats[self.stats[strStat].type](objStat.data,self.stats[strStat]);
-				//----====|| STATS WINDOWS ||====----\\
-				if(self.stats[strStat].hasOwnProperty('level')){ 
-					updateWindows(objStat.data,self.stats[strStat]); 
-				}
-				//----====|| STATS TRIM ||====----\\
-				var fTrim=false;
-				var intLimit = self.stats[strStat].limit;
-				if(self.stats[strStat].hasOwnProperty('padding')){ intLimit +=self.stats[strStat].padding; }
-				if(self.stats[strStat].hasOwnProperty('limit') && self.stats[strStat].count > intLimit){ 
-					if(self.stats[strStat].hasOwnProperty('level') && Object.keys(self.stats[strStat].windows.current.values).length > intLimit){ fTrim=true; }
-					else if(Object.keys(self.stats[strStat].values).length > intLimit){ fTrim=true; }
-				} 
-				if(fTrim===true){ trimStat(self.stats[strStat]); }	
-				//reset
-				arrBatch[strStat]=undefined;
+				//if(self.stats[strStat]){
+					self.stats[strStat]=updateStats[self.stats[strStat].type](objStat.data,self.stats[strStat]); 
+					//----====|| STATS WINDOWS ||====----\\
+					if(self.stats[strStat].hasOwnProperty('level')){ 
+						updateWindows(objStat.data,self.stats[strStat]); 
+					}
+					//----====|| STATS TRIM ||====----\\
+					var fTrim=false;
+					var intLimit = self.stats[strStat].limit;
+					if(self.stats[strStat].hasOwnProperty('padding')){ intLimit +=self.stats[strStat].padding; }
+					if(self.stats[strStat].hasOwnProperty('limit') && self.stats[strStat].count > intLimit){ 
+						if(self.stats[strStat].hasOwnProperty('level') && Object.keys(self.stats[strStat].windows.current.values).length > intLimit){ fTrim=true; }
+						else if(Object.keys(self.stats[strStat].values).length > intLimit){ fTrim=true; }
+					} 
+					if(fTrim===true){ trimStat(self.stats[strStat]); }	
+					//reset
+					delete arrBatch[strStat];
+				//}
 			});
 		}
 		self.inProcess=false;
 	};
 	this.addStat=function(strStat,objStat){
-		self.stats[strStat]=objStat;
+		self.config.stats[strStat]=objStat;
 		initStat(strStat,objStat);
 	}
 	this.delStat=function(strStat){
+		delete self.config.stats[strStat];
 		delete self.stats[strStat];
 	}
 	this.rstStat=function(strStat){
@@ -175,6 +173,16 @@ var SuddenStats = function(objConfig){
 			if(self.config.stats[k].level=='day'){
 				self.stats[k].windows.day=[]; 
 			}
+		}
+		//init the filters
+		if(objStat.hasOwnProperty('filter')){
+			//always format filters into an array
+			if(objStat.filter.constructor !== Array){ objStat.filter=[objStat.filter]; }
+			_.for(objStat.filter,function(v,k){
+				if(!v.hasOwnProperty('and')){objStat.filter[k].and={}; }
+				if(v.hasOwnProperty('val2')){ objStat.filter[k].and.val2=v.val2; delete objStat.filter[k].val2; }
+				if(v.hasOwnProperty('path2')){ objStat.filter[k].and.path2=v.path2; delete objStat.filter[k].path2; }
+			});	 
 		}
 	}
 	var runQ = function(arrData){
@@ -358,7 +366,7 @@ var SuddenStats = function(objConfig){
 		_.forEach(arrData,function(v,k){
 			//get top level stats
 			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
-			if(v.ls > objAgg.ls){ objAgg.max = v.ls; }
+			if(v.ls > objAgg.ls){ objAgg.ls = v.ls; }
 			objAgg.total += v.total;
 			_.for(v.values,function(vv,kk){
 				if(objAgg.values.hasOwnproperty(kk)){ objAgg.values[kk] += vv; }
@@ -377,12 +385,25 @@ var SuddenStats = function(objConfig){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
 		if(v.constructor === Array){v=v.join()}
 		intCount = _.strCount(strNeedle,v);
-		if(objOptions && typeof objOptions.reverse!== 'undefined' && objOptions.reverse === true){  
+		if(objOptions.reverse === true){  
 			//filter out objects that match
-			if(intCount===0){return objStat}else{return false;}
+			if(intCount===0){ return true; }else{return false;}
 		}else{
 			//filter out objects that dont match
-			if(intCount>0){return objStat}else{return false;}
+			if(intCount>0){ return true; }else{return false;}
+		}
+	};
+	objFilters.has = function(strPath,strNeedle,objStat,objOptions){ 
+		var intCount = 0; var v=_.get(objStat,strPath);
+		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
+		if(v.constructor === Array){v=v.join()}
+		intCount = _.strCount(strNeedle,v);
+		if(objOptions.reverse === true){  
+			//filter out objects that match
+			if(intCount!==objOptions.val2){ return true; }else{return false;}
+		}else{
+			//filter out objects that dont match
+			if(intCount===objOptions.val2){ return true; }else{return false;}
 		}
 	};
 	objFilters.eq = function(strPath,varValue,objStat,objOptions){
@@ -390,33 +411,33 @@ var SuddenStats = function(objConfig){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
 			//filter out what does match
-			if(varValue !== _.get(objStat,strPath)){ console.log(objStat); return objStat; }else{ return false; }
+			if(varValue !== _.get(objStat,strPath)){ return true; }else{ return false; }
 		}else{
 		//filter out what doesnt match
 			//console.log('val:',varValue,'path:',strPath,'stat:',objStat,'result:',_.get(objStat,strPath));
-			if(varValue === _.get(objStat,strPath)){ return objStat; }else{ return false; }
+			if(varValue === _.get(objStat,strPath)){ return true; }else{ return false; }
 		}
 	};
 	objFilters.ni = function(strPath,varValue,objStat,objOptions){ 
 		objOptions.reverse=true;
-		objFilters.in(strPath,varValue,objStat,objOptions); 
+		return objFilters.in(strPath,varValue,objStat,objOptions); 
 	}
 	objFilters.ne = function(strPath,varValue,objStat,objOptions){ 
 		objOptions.reverse=true;
-		objFilters.eq(strPath,varValue,objStat,objOptions); 
+		return objFilters.eq(strPath,varValue,objStat,objOptions); 
 	}
 	//greater than
 	objFilters.gt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
-			if(varValue > _.get(objStat,strPath)){ return objStat; }else{ return false; }
+			if(varValue > _.get(objStat,strPath)){ return true; }else{ return false; }
 		}
 	};
 	//less than
 	objFilters.lt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
 		if(objOptions && typeof objOptions.reverse !== 'undefined' && objOptions.reverse === true){
-			if(varValue < _.get(objStat,strPath)){ return objStat; }else{ return false; }
+			if(varValue < _.get(objStat,strPath)){ return true; }else{ return false; }
 		}
 	};
 
