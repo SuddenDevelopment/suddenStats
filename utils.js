@@ -4,8 +4,10 @@ var utils = function(){
 	//get a value from a defined path in an object
 	 self.get = function(objModel, strPath) {
         var arrProps = strPath.split('.'),
+            l=arrProps.length;
             prop = objModel;
-        for(var i = 0, len = arrProps.length; i < len; i++) {
+        
+        for(var i = 0, len = l; i < len; i++) {
             if (typeof prop[arrProps[i]] !== 'undefined' && prop[arrProps[i]] !== null) { prop = prop[arrProps[i]];} 
             else { return null;}
         }
@@ -21,7 +23,10 @@ var utils = function(){
     		i++;
     	}
     };
-     self.for = function(arr,fn){ for(var i=arr.length-1;i>=0;i--){ fn(arr[i],i); } }
+     self.for = function(arr,fn){ 
+        var l=arr.length-1;
+        for(var i=l;i>=0;i--){ fn(arr[i],i); } 
+    }
      self.defaults = function(objTarget,objDefaults){
     	self.forOwn(objDefaults,function(v,k){ 
     		if(!objTarget[k]){ objTarget[k]= v;}
@@ -50,6 +55,37 @@ var utils = function(){
     	});
     	return arrFresh;
     };
+
+    self.unique = function(arr) {
+      //found here: https://jsperf.com/array-unique-values/18
+      var set = [arr[0]],
+          l=arr.length;
+          bst = { v: arr[0], l: null, r: null };
+
+      for (var i = 1, len = l; i < len; i++) {
+        var value = arr[i], root = bst, uv = true;
+        while (true) {
+          if (value > root.v) {
+            if (!root.r) {
+              root.r = { v: value, l: null, r: null };
+              break;
+            }
+            root = root.r;
+          } else if (value < root.v) {
+            if (!root.l) {
+              root.l = { v: value, l: null, r: null };
+              break;
+            }
+            root = root.l;
+          } else {
+            uv = false;
+            break;
+          }
+        }
+        if (uv) { set.push(value); }
+      }
+      return set;
+    }
     //----====|| STRINGS ||====----\\
     self.strCount = function(strNeedle,strHaystack,objOptions){
         if(objOptions && typeof objOptions.preserveCase!== 'undefined' && objOptions.preserveCase === false){ 

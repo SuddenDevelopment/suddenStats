@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node suddenstats.js",
-    "test": "mocha -R spec ./tests"
+    "test": "mocha -R spec ./test"
   },
   "repository": {
     "type": "git",

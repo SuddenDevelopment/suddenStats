@@ -2,6 +2,7 @@
 
 /* 
 TODO:
+	-remove padding, use multiple of limit, process on multiples, not every record over limit
 	-do as much in init as possible, dont validate configs after that
 	-minute+hour co-occurence stats
 	-weekday+hour co-occurence stats ,not that great for "now" timestamps
