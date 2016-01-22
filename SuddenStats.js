@@ -9,7 +9,7 @@ TODO:
 	-day of month occurence ,not that great for "now" timestamps
 */
 //only do the require thing in node, browser needs to include files individually
-if (typeof window == 'undefined'){var utils = require('./utils.js');}
+if (typeof window == 'undefined'){var utils = require('suddenutils');}
 var _ = new utils;
 var SuddenStats = function(objConfig){
 	//----====|| CONFIG ||====----\\

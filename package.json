@@ -6,14 +6,15 @@
   "contributors": [
     "Anthony Aragues <anthony.aragues@gmail.com>"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "suddenutils": "^1.0.0"
+  },
   "main": "suddenstats.js",
   "devDependencies": {
     "mocha": "^2.1.0",
     "should": "^4.4.2"
   },
   "scripts": {
-    "start": "node suddenstats.js",
     "test": "mocha -R spec ./test"
   },
   "repository": {
