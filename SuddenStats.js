@@ -2,8 +2,6 @@
 
 /* 
 TODO:
-	-remove padding, use multiple of limit, process on multiples, not every record over limit
-	-do as much in init as possible, dont validate configs after that
 	-minute+hour co-occurence stats
 	-weekday+hour co-occurence stats ,not that great for "now" timestamps
 	-day of month occurence ,not that great for "now" timestamps
@@ -14,11 +12,12 @@ var _ = new utils;
 var SuddenStats = function(objConfig){
 	//----====|| CONFIG ||====----\\
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
-	this.config = {limit:1000,throttle:1000,batch:'or',stats:{primary:{type:'numeric'}}};
+	this.config = {limit:100000,throttle:1000,batch:'or',stats:{primary:{type:'numeric'}}};
 	//simple mode is when only the global stat is used and only arrays of numbers are passed in. by setting this once for the object it avoids many typechecks
 	this.simple = false;
 	this.stats = {};
 	this.batch = [];
+	this.stats.batchStats = {total:0,last:0,current:0,diff:0};
 	this.ts = Date.now();
 	this.intBatch = 0;
 	this.inProcess=false;
@@ -189,6 +188,13 @@ var SuddenStats = function(objConfig){
 	var runQ = function(arrData){
 		//just a little helper to qData
 		var ts=Date.now();
+		//update the batch stats  	this.batchStats = {total:0,last:0,diff:0};
+		
+		self.stats.batchStats.last = self.stats.batchStats.current;
+		self.stats.batchStats.current = arrData.length;
+		self.stats.batchStats.total = self.stats.batchStats.total+self.stats.batchStats.current;
+		self.stats.batchStats.diff = self.stats.batchStats.current-self.stats.batchStats.last;
+
 		self.addData(self.batch);
 		if(self.inProcess===true){
 			//adjust the throttling until runs dont bump into each other
