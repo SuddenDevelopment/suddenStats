@@ -17,7 +17,7 @@ var SuddenStats = function(objConfig){
 	this.simple = false;
 	this.stats = {};
 	this.batch = [];
-	this.stats.batchStats = {total:0,last:0,current:0,diff:0};
+	this.stats.batchStats = {total:0,last:0,current:0,diff:0,min:0,max:0};
 	this.ts = Date.now();
 	this.intBatch = 0;
 	this.inProcess=false;
@@ -192,8 +192,11 @@ var SuddenStats = function(objConfig){
 		
 		self.stats.batchStats.last = self.stats.batchStats.current;
 		self.stats.batchStats.current = arrData.length;
+		if(self.stats.batchStats.total===0){self.stats.batchStats.min=self.stats.batchStats.current;}
 		self.stats.batchStats.total = self.stats.batchStats.total+self.stats.batchStats.current;
 		self.stats.batchStats.diff = self.stats.batchStats.current-self.stats.batchStats.last;
+		if(self.stats.batchStats.current< self.stats.batchStats.min){ self.stats.batchStats.min=self.stats.batchStats.current; }
+		if(self.stats.batchStats.current> self.stats.batchStats.max){ self.stats.batchStats.max=self.stats.batchStats.current; }
 
 		self.addData(self.batch);
 		if(self.inProcess===true){
