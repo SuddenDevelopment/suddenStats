@@ -27,6 +27,7 @@ var SuddenStats = function(objConfig){
 	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
 	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
 	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,max:0,fs:Date.now(),ls:Date.now(),values:{}}; }
+	 objDefaults.collection = function(){return {values:[]};}
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
@@ -105,6 +106,7 @@ var SuddenStats = function(objConfig){
 						switch(objStat.type){
 							case 'numeric': varValue = _.get(objData,objStat.path); break;
 							case 'uniq': varValue = _.get(objData,objStat.path); break;
+							case 'collection': varValue = _.get(objData,objStat.path); break;
 							case 'compete': varValue = [_.get(objData,objStat.path),_.get(objData,objStat.score)]; break;
 							case 'co_occurence': varValue= _.get(objData,objStat.path)+'_'+_.get(objData,objStat.path2); break;
 						}
@@ -286,6 +288,17 @@ var SuddenStats = function(objConfig){
 	}
 
 //----====|| Stats ||====----\\
+	updateStats.collection = function(arrData,objStat){
+		_.for(arrData,function(v,k){
+			if(v===false){v="false";}else if(v===true){v="true";}
+			//values[{v:"value",i=:1}]
+			//keep consecutive aggregates, keeps the count down and makes it easier to bundle at higher volumes
+			if(objStat.values.length > 0 && objStat['values'][0]['v']===v){ objStat['values'][0].count++;  }
+			else{ objStat.values.unshift( {"v":v,count:1} ); }
+		});
+		return objStat;
+	}
+
 	updateStats.uniq = function(arrData, objStat){
 		//console.log('uniq: ',arrData,objStat);
 		var intTotal=0, intCount=0, v;

@@ -62,23 +62,6 @@ describe('performance test', function () {
  });
 });
 
-describe('batch test', function () {
- it('expecting batch limit to get processed and the leftover to be in an unprocessed batch', function (done) {
-    //test
-    var objStats = new SuddenStats();
-    var intStart= Date.now();
-    for(var i=1;i<=1001;i++){ objStats.qData(i); }
-    var intEnd= Date.now();
-    var intDuration= (intEnd-intStart)/1000;
-    //check
-     //console.log(objStats.stats);
-     //console.log(objStats.intBatch);
-   (objStats.stats.primary.count).should.be.exactly(1000);
-   (objStats.intBatch).should.be.exactly(1);
-   done();
- });
-});
-
 describe('count all exact occurences of a value given a json path', function () {
  it('should return max=6', function (done) {
     //test
@@ -89,6 +72,7 @@ describe('count all exact occurences of a value given a json path', function () 
         ,user:{type:"compete",path:"user",score:"score"}
         ,user_source:{type:"co_occurence",path:"user",path2:"source"}
         ,users:{type:"uniq",path:"user",level:"minute"}
+        ,users2:{type:"collection",path:"user"}
         ,twitterScores:{type:"numeric",path:"score",filter:{path:"source",op:"eq",val:"twitter"}}
         ,aboveAvg:{type:"numeric",path:"score",filter:{path:"score",op:"gt",path2:"avg"}}
       }
@@ -105,9 +89,10 @@ describe('count all exact occurences of a value given a json path', function () 
         ,{"source":"wikipedia","user":"randall","score":24}
       ]
     ); 
-    //console.log(objStats.stats.users.windows.current);
+    console.log(objStats.stats.users2);
    (objStats.stats.source.values.wikipedia).should.be.exactly(6);
    (objStats.stats.twitterScores.total).should.be.exactly(64);
+   (objStats.stats.users2.values[1].count).should.be.exactly(2);
    done();
  });
 });
