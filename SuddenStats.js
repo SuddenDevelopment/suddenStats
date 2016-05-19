@@ -418,16 +418,19 @@ var SuddenStats = function(objConfig){
 	};
 	objFilters.has = function(strPath,strNeedle,objStat,objOptions){ 
 		var intCount = 0; var v=_.get(objStat,strPath);
-		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
-		if(v.constructor === Array){v=v.join()}
-		intCount = _.strCount(strNeedle,v);
-		if(objOptions.reverse === true){  
-			//filter out objects that match
-			if(intCount!==objOptions.val2){ return true; }else{return false;}
-		}else{
-			//filter out objects that dont match
-			if(intCount===objOptions.val2){ return true; }else{return false;}
-		}
+		if(v){
+			if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
+			if(v.constructor === Array){v=v.join()}
+			intCount = _.strCount(strNeedle,v);
+			if(objOptions.reverse === true){  
+				//filter out objects that match
+				if(intCount!==objOptions.val2){ return true; }else{return false;}
+			}else{
+				//filter out objects that dont match
+				if(intCount===objOptions.val2){ return true; }else{return false;}
+			}
+			//add in a little error logging when something defined for stats is not found.
+		}else{ console.log('path: ',strPath, ' not found in: ' ,objStat); }
 	};
 	objFilters.eq = function(strPath,varValue,objStat,objOptions){
 		//console.log(strPath,varValue,objStat,objOptions);
