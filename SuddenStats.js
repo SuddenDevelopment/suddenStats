@@ -293,8 +293,10 @@ var SuddenStats = function(objConfig){
 			if(v===false){v="false";}else if(v===true){v="true";}
 			//values[{v:"value",i=:1}]
 			//keep consecutive aggregates, keeps the count down and makes it easier to bundle at higher volumes
-			if(objStat.values.length > 0 && objStat['values'][0]['v']===v){ objStat['values'][0].count++;  }
-			else{ objStat.values.unshift( {"v":v,count:1} ); }
+			if(v!==null){
+				if(objStat.values.length > 0 && objStat['values'][0]['v']===v){ objStat['values'][0].count++;  }
+				else{ objStat.values.unshift( {"v":v,count:1} ); }
+			}
 		});
 		return objStat;
 	}
