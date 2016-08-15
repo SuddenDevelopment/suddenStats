@@ -303,14 +303,15 @@ var SuddenStats = function(objConfig){
 
 	updateStats.uniq = function(arrData, objStat){
 		//console.log('uniq: ',arrData,objStat);
+		var intTs = Date.now();
 		var intTotal=0, intCount=0, v;
 		_.for(arrData,function(v,k){
 			//update values
 			if(v===true){v='true';}else if(v===false){v='false';}
-			if(objStat.values.hasOwnProperty(v)){ objStat.values[v]++; }
-			else{objStat.values[v]=1; intCount++; }
+			if(objStat.values.hasOwnProperty(v)){ objStat.values[v].count++; objStat.values[v].ls=intTs; }
+			else{objStat.values[v]={count:1,fs:intTs,ls:intTs}; intCount++; }
 			//update max
-			if(objStat.values[v] > objStat.max){objStat.max = objStat.values[v];}
+			if(objStat.values[v].count > objStat.max){objStat.max = objStat.values[v].count;}
 			//add to total
 			intTotal++;
 			//update avg
@@ -318,7 +319,7 @@ var SuddenStats = function(objConfig){
 		});
 		objStat.total += intTotal;
 		objStat.count += intCount;
-		objStat.ls = Date.now();
+		objStat.ls = intTs;
 		return objStat;
 	}
 

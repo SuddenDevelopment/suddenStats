@@ -90,7 +90,7 @@ describe('count all exact occurences of a value given a json path', function () 
       ]
     ); 
     console.log(objStats.stats.users2);
-   (objStats.stats.source.values.wikipedia).should.be.exactly(6);
+   (objStats.stats.source.values.wikipedia.count).should.be.exactly(6);
    (objStats.stats.twitterScores.total).should.be.exactly(64);
    (objStats.stats.users2.values[1].count).should.be.exactly(2);
    done();
