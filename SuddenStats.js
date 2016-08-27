@@ -88,10 +88,12 @@ var SuddenStats = function(objConfig){
 			_.forEach(arrData,function(objData,k){
 				//----====|| LOOP THROUGH STATS CONFIG ||====----\\
 				_.forOwn(self.config.stats,function(objStat,strStat){
+					//console.log(objStat);
 					//----====|| FILTER ||====----\\
 					var fKeep=true;
 					if(objStat.hasOwnProperty('filter')){
 						_.for(objStat.filter,function(v,k){
+							//console.log(v,k);
 							//pass to a filter function by op with path and val params
 							if(fKeep===true){
 								fKeep=objFilters[v.op](v.path,v.val,objData,v.and);
@@ -148,6 +150,7 @@ var SuddenStats = function(objConfig){
 		self.inProcess=false;
 	};
 	this.addStat=function(strStat,objStat){
+		//console.log(strStat,objStat);
 		self.config.stats[strStat]=objStat;
 		initStat(strStat,objStat);
 	}
@@ -277,9 +280,9 @@ var SuddenStats = function(objConfig){
 			}
 		}else{
 			var i=0,length = Object.keys(objStat.values).length;
-			console.log(Object.keys(objStat.values).length, objStat.limit);
+			//console.log(Object.keys(objStat.values).length, objStat.limit);
 			while (length > objStat.limit){ 
-				if(objStat.values[Object.keys(objStat.values)[i]].count <= objStat.avg || objStat.values[Object.keys(objStat.values)[i]].total <= objStat.avg){
+				if(objStat.values[Object.keys(objStat.values)[i]].count < objStat.avg){
 					//console.log('delete: ', objStat.values[Object.keys(objStat.values)[i]])
 					delete objStat.values[Object.keys(objStat.values)[i]];
 				}
@@ -295,10 +298,13 @@ var SuddenStats = function(objConfig){
 			if(v===false){v="false";}else if(v===true){v="true";}
 			//values[{v:"value",i=:1}]
 			//keep consecutive aggregates, keeps the count down and makes it easier to bundle at higher volumes
+			/*
 			if(v!==null){
 				if(objStat.values.length > 0 && objStat['values'][0]['v']===v){ objStat['values'][0].count++;  }
 				else{ objStat.values.unshift( {"v":v,count:1} ); }
 			}
+			*/
+			objStat.values.unshift( {"v":v,count:1} );
 		});
 		return objStat;
 	}
