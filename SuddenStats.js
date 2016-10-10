@@ -282,7 +282,7 @@ var SuddenStats = function(objConfig){
 			var i=0,length = Object.keys(objStat.values).length;
 			//console.log(Object.keys(objStat.values).length, objStat.limit);
 			while (length > objStat.limit){ 
-				if(objStat.values[Object.keys(objStat.values)[i]].count < objStat.avg){
+				if(typeof objStat.values[Object.keys(objStat.values)[i]] !== 'undefined' && objStat.values[Object.keys(objStat.values)[i]].count < objStat.avg){
 					//console.log('delete: ', objStat.values[Object.keys(objStat.values)[i]])
 					delete objStat.values[Object.keys(objStat.values)[i]];
 				}
@@ -294,6 +294,7 @@ var SuddenStats = function(objConfig){
 
 //----====|| Stats ||====----\\
 	updateStats.collection = function(arrData,objStat){
+		var intTs = Date.now(); 
 		_.for(arrData,function(v,k){
 			if(v===false){v="false";}else if(v===true){v="true";}
 			//values[{v:"value",i=:1}]
@@ -304,7 +305,7 @@ var SuddenStats = function(objConfig){
 				else{ objStat.values.unshift( {"v":v,count:1} ); }
 			}
 			*/
-			objStat.values.unshift( {"v":v,count:1} );
+			objStat.values.unshift( {"v":v, count:1, ts:intTs} );
 		});
 		return objStat;
 	}
