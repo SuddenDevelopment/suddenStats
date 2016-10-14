@@ -1,5 +1,3 @@
-'use strict';
-
 /* 
 TODO:
 	-minute+hour co-occurence stats
@@ -8,8 +6,9 @@ TODO:
 */
 //only do the require thing in node, browser needs to include files individually
 if (typeof window == 'undefined'){var utils = require('suddenutils');}
-var _ = new utils;
+var _ = new utils();
 var SuddenStats = function(objConfig){
+	'use strict';
 	//----====|| CONFIG ||====----\\
 	//start with some defaults, the global stat will require nuothing but a number passed in an array.
 	this.config = {limit:100000,throttle:1000,batch:'or',stats:{primary:{type:'numeric'}}};
@@ -23,11 +22,11 @@ var SuddenStats = function(objConfig){
 	this.inProcess=false;
 	//this.processing = false;
 	var objDefaults={},updateStats={},aggStats={},trimStats={},objFilters={};
-	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; }
-	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; }
-	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}};; }
-	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,max:0,fs:Date.now(),ls:Date.now(),values:{}}; }
-	 objDefaults.collection = function(){return {values:[]};}
+	 objDefaults.numeric = function(){return {min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),type:'numeric'}; };
+	 objDefaults.uniq = function(){return {limit:100,count:0,fs:Date.now(),ls:Date.now(),max:0,total:0,avg:0,values:{}}; };
+	 objDefaults.compete = function(){return {limit:100,min:0,max:0,avg:0,count:0,total:0,first:false,last:false,lastAvg:false,diff:0,fs:Date.now(),ls:Date.now(),values:{}}; };
+	 objDefaults.co_occurence = function(){return {total:0,limit:100,count:0,max:0,fs:Date.now(),ls:Date.now(),values:{}}; };
+	 objDefaults.collection = function(){return {values:[]};};
 	 objDefaults.windows = {minute:60,hour:24,day:7,week:52};
 
 	var self=this;
@@ -45,7 +44,7 @@ var SuddenStats = function(objConfig){
 		});
 		//can we go into simple mode? if so it will be much faster, and generic of course
 		if(self.stats.primary){ self.simple = true; }
-	}
+	};
 
 //----====|| Public Functions ||====----\\
 	this.qData = function(varData){
@@ -56,7 +55,7 @@ var SuddenStats = function(objConfig){
 				//combine batches or arrays into the throttle timeline
 				var v;
 				self.intBatch=self.intBatch = self.intBatch+varData.length;
-				while(v=varData.pop()){ self.batch.push(v); }
+				while(v=arr.pop()){self.batch.push(v); }
 			}else{
 				//for individual entries
 				self.intBatch=self.intBatch+1;
@@ -77,7 +76,7 @@ var SuddenStats = function(objConfig){
 		//clear the batch
 		self.batch=[]; self.intBatch=0;
 		//skip all the extra stuff if it's just numeric.
-		if(self.simple===true){ self.stats.primary = updateStats['numeric'](arrData,self.stats.primary); }
+		if(self.simple===true){ self.stats.primary = updateStats.numeric(arrData,self.stats.primary); }
 		else{
 			var arrBatch={};
 			_.forOwn(self.config.stats,function(objStat,strStat){
@@ -153,14 +152,14 @@ var SuddenStats = function(objConfig){
 		//console.log(strStat,objStat);
 		self.config.stats[strStat]=objStat;
 		initStat(strStat,objStat);
-	}
+	};
 	this.delStat=function(strStat){
 		delete self.config.stats[strStat];
 		delete self.stats[strStat];
-	}
+	};
 	this.rstStat=function(strStat){
 		initStat(strStat,self,stats[strStat]);
-	}
+	};
 
 //----====|| Internal Functions ||====----\\
 	var initStat = function(k,objStat){
@@ -189,7 +188,7 @@ var SuddenStats = function(objConfig){
 				if(v.hasOwnProperty('path2')){ objStat.filter[k].and.path2=v.path2; delete objStat.filter[k].path2; }
 			});	 
 		}
-	}
+	};
 	var runQ = function(arrData){
 		//just a little helper to qData
 		var ts=Date.now();
@@ -210,13 +209,13 @@ var SuddenStats = function(objConfig){
 		}
 		//set the new timestamp
 		self.ts=ts;
-	}
+	};
 
 	var trimStat = function(objStat){
 		var strKeep="newest";
 		if(objStat.hasOwnProperty('keep') && trimStats.hasOwnProperty(strKeep)){ strKeep=objStat.keep; }
 		return trimStats[strKeep](objStat);
-	}
+	};
 
 	var updateWindows = function(arrData, objStat){
 		//console.log(arrData,objStat);
@@ -229,14 +228,14 @@ var SuddenStats = function(objConfig){
 			objStat.windows.current = _.defaults({},objDefaults[objStat.type]());
 			if(objStat.windows.hasOwnProperty('hour') && objStat.windows.ts_hour < objStat.ls-360000){
 				//loop through minutes and drop off anything older than an hour
-				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000)
+				objStat.windows.minute = _.filterOld(objStat.windows.minute, 'fs', 360000);
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.hour.push( aggStats[objStat.type](objStat.windows.minute) );
 				objStat.windows.ts_hour = objStat.ls;
 			}
 			if(objStat.windows.hasOwnProperty('day') && objStat.windows.ts_hour < objStat.ls-86400000){
 				//loop through minutes and drop off anything older than an hour
-				objStat.windows.hour = _.filterOld(objStat.windows.hour, 'fs', 86400000)
+				objStat.windows.hour = _.filterOld(objStat.windows.hour, 'fs', 86400000);
 				//then take the remaining ones to aggregate into an hour
 				objStat.windows.day.push( aggStats[objStat.type](objStat.windows.hour) );
 				objStat.windows.ts_day = objStat.ls;
@@ -245,33 +244,34 @@ var SuddenStats = function(objConfig){
 		//process current
 		objStat.windows.current = updateStats[objStat.type](arrData,objStat.windows.current);
 		return objStat;
-	}
+	};
 
 //----====|| Trims ||====----\\
 	trimStats.newest = function(objStat){
 		//console.log('trim new:');
 		//TODO: remove code repitition
+		var i=0,length=0;
 		if(objStat.hasOwnProperty('windows')){
-			var i=0,length = Object.keys(objStat.windows.current.values).length;
+			i=0;length = Object.keys(objStat.windows.current.values).length;
 			while (length-- > objStat.limit){ 
 				delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
 				i++;
 			}
 		}else{
-			var i=0,length = Object.keys(objStat.values).length;
+			i=0;length = Object.keys(objStat.values).length;
 			while (length-- > objStat.limit){ 
 				delete objStat.values[Object.keys(objStat.values)[i]]; 
 				i++;
 			}
 		}
 		return objStat;
-	}
+	};
 	trimStats.newHigh = function(objStat){
 		//console.log('trim newHigh:');
 		//TODO: remove code repetition
 		//TODO: use the position as a factor in deciding to remove even if it's above average
 		if(objStat.hasOwnProperty('windows')){
-			var i=0,length = Object.keys(objStat.windows.current.values).length;
+			i=0;length = Object.keys(objStat.windows.current.values).length;
 			while (length > objStat.limit){ 
 				if(objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]] <= objStat.avg){
 					delete objStat.windows.current.values[Object.keys(objStat.windows.current.values)[i]]; 
@@ -279,7 +279,7 @@ var SuddenStats = function(objConfig){
 				i++; length--;
 			}
 		}else{
-			var i=0,length = Object.keys(objStat.values).length;
+			i=0;length = Object.keys(objStat.values).length;
 			//console.log(Object.keys(objStat.values).length, objStat.limit);
 			while (length > objStat.limit){ 
 				if(typeof objStat.values[Object.keys(objStat.values)[i]] !== 'undefined' && objStat.values[Object.keys(objStat.values)[i]].count < objStat.avg){
@@ -290,7 +290,7 @@ var SuddenStats = function(objConfig){
 			}
 		}
 		return objStat;
-	}
+	};
 
 //----====|| Stats ||====----\\
 	updateStats.collection = function(arrData,objStat){
@@ -308,7 +308,7 @@ var SuddenStats = function(objConfig){
 			objStat.values.unshift( {"v":v, count:1, ts:intTs} );
 		});
 		return objStat;
-	}
+	};
 
 	updateStats.uniq = function(arrData, objStat){
 		//console.log('uniq: ',arrData,objStat);
@@ -330,7 +330,7 @@ var SuddenStats = function(objConfig){
 		objStat.count += intCount;
 		objStat.ls = intTs;
 		return objStat;
-	}
+	};
 
 	updateStats.compete = function(arrData, objStat){
 		var intCount = 0, intTotal=0, v;
@@ -345,12 +345,12 @@ var SuddenStats = function(objConfig){
 		objStat.avg=objStat.total/objStat.count;
 		objStat.ls = Date.now();
 		return objStat;
-	}
+	};
 
 	updateStats.co_occurence = updateStats.uniq;
 
 	updateStats.numeric = function(arrData, objStat){
-		if (!(arrData.constructor === Array)) { arrData = [arrData]; }
+		if (arrData.constructor !== Array) { arrData = [arrData]; }
 		//EXAMPLE: objStat.updateStat([1,2,3,3,4],'primary');
 		var intCount = 0,
 			intMin=arrData[0],
@@ -394,10 +394,10 @@ var SuddenStats = function(objConfig){
 		});
 		objAgg.avg = objAgg.total/objAgg.count;
 		return objAgg;
-	}
+	};
 	aggStats.uniq = function(arrData){
-		var objAgg = _.defaults({},objDefaults.uniq)
-		,intCount=0;
+		var objAgg = _.defaults({},objDefaults.uniq);
+		var intCount=0;
 		_.forEach(arrData,function(v,k){
 			//get top level stats
 			if(v.fs < objAgg.fs){ objAgg.fs = v.fs; }
@@ -410,7 +410,7 @@ var SuddenStats = function(objConfig){
 			objAgg.count = intCount;
 		});
 		return objAgg;
-	}
+	};
 	aggStats.compete = aggStats.uniq;
 	aggStats.co_occurence = aggStats.uniq;
 
@@ -418,7 +418,7 @@ var SuddenStats = function(objConfig){
 	objFilters.in = function(strPath,strNeedle,objStat,objOptions){ 
 		var intCount = 0; var v=_.get(objStat,strPath);
 		if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
-		if(v.constructor === Array){v=v.join()}
+		if(v.constructor === Array){v=v.join();}
 		intCount = _.strCount(strNeedle,v);
 		if(objOptions.reverse === true){  
 			//filter out objects that match
@@ -432,7 +432,7 @@ var SuddenStats = function(objConfig){
 		var intCount = 0; var v=_.get(objStat,strPath);
 		if(v){
 			if(objOptions && objOptions.hasOwnProperty('path2')){ strNeedle=_.get(objStat,objOptions.path2); }
-			if(v.constructor === Array){v=v.join()}
+			if(v.constructor === Array){v=v.join();}
 			intCount = _.strCount(strNeedle,v);
 			if(objOptions.reverse === true){  
 				//filter out objects that match
@@ -459,11 +459,11 @@ var SuddenStats = function(objConfig){
 	objFilters.ni = function(strPath,varValue,objStat,objOptions){ 
 		objOptions.reverse=true;
 		return objFilters.in(strPath,varValue,objStat,objOptions); 
-	}
+	};
 	objFilters.ne = function(strPath,varValue,objStat,objOptions){ 
 		objOptions.reverse=true;
 		return objFilters.eq(strPath,varValue,objStat,objOptions); 
-	}
+	};
 	//greater than
 	objFilters.gt =function(strPath,varValue,objStat,objOptions){
 		if(objOptions && objOptions.hasOwnProperty('path2')){ varValue=_.get(objStat,objOptions.path2); }
