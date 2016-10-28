@@ -42,7 +42,7 @@ var SuddenStats = require('suddenstats');
 ```
 
 ## browser include
-```
+```html
 <script src="bower_components/suddenstats/utils.js"></script>
 <script src="bower_components/suddenstats/SuddenStats.js"></script>
 ```
