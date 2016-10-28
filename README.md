@@ -48,7 +48,7 @@ var SuddenStats = require('suddenstats');
 ```
 
 ## Example use from demo
-```
+```javascript
 var objStats = new SuddenStats({
     stats:{ 
       ips:{type:"uniq",path:"user",limit:10,padding:5,filter:[{path:"server_name",op:"ne",val:"en.wikipedia.org"},{path:"user",op:"in",val:"."}]}
