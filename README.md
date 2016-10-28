@@ -79,10 +79,13 @@ var objStats = new SuddenStats({
 - day, 60 minute windows, 24 hourly windows, daily windows.
 
 ### Filters:
+- has: val2 many strings mentioned in val found in path an IP has 3 periods. path:'ip',val='.',val2:3
 - eq: exact matches
 - in: substring or item in array match
+- ni: not in, opposite of in
 - gt: greater than
 - lt: less than
+- ne: not equals
 
 ### Options
 - limit: max number of values to trim to
