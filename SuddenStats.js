@@ -55,7 +55,7 @@ var SuddenStats = function(objConfig){
 				//combine batches or arrays into the throttle timeline
 				var v;
 				self.intBatch=self.intBatch = self.intBatch+varData.length;
-				while(v=arr.pop()){self.batch.push(v); }
+				while(v=varData.pop()){self.batch.push(v); }
 			}else{
 				//for individual entries
 				self.intBatch=self.intBatch+1;
