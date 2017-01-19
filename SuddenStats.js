@@ -47,11 +47,12 @@ var SuddenStats = function(objConfig){
 	};
 
 //----====|| Public Functions ||====----\\
+	this.processQ=function(){ runQ(self.batch); };
 	this.qData = function(varData){
 		//EXAMPLE: objStat.qData([1,2,3,4]);
 		//add data as often as you want, but batch it by time, using the deboucne config, defined in miliseconds
 		//config.limit is to start kciking things out of the batch after too many per batch / time period
-			if(Array.isArray(varData)){  
+			if(varData.constructor === Array){  
 				//combine batches or arrays into the throttle timeline
 				var v;
 				self.intBatch=self.intBatch = self.intBatch+varData.length;
