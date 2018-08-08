@@ -1,6 +1,6 @@
 # suddenStats
 
-demo: <a href="http://suddendevelopment.com/suddenstats/demo/"> here </a>
+demo: (coming back soon)
 
 minimal config common statistics
 
